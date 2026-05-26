@@ -13,37 +13,18 @@
         <div class="banner-subtitle">OFFICIAL ALLIANCE OPERATIONS PANEL</div>
     </header>
 
-    <nav class="nav-bar">
-        <button class="nav-btn active" onclick="switchTab('hq')">HQ INTEL</button>
-        <button class="nav-btn" onclick="switchTab('weapons')">WEAPONS DISPATCH</button>
-        <button class="nav-btn" onclick="switchTab('bank')">PAYROLL REGISTRY</button>
-    </nav>
-
     <main class="main-content">
         
-        <section id="tab-hq" class="tab-pane active">
-            <div class="intel-card">
+        <section class="panel-section">
+            <div class="intel-card header-card">
                 <h3>SUPREME COMMAND DIRECTIVE</h3>
                 <p class="propaganda-text">
                     Sovereignty is secured through absolute military supremacy and ironclad economic coordination. Complete your tracking logs, coordinate your stockpiles, and declare your battlefield returns. Victory is non-negotiable.
                 </p>
             </div>
-
-            <div class="stats-overview-grid">
-                <div class="intel-card metric-box">
-                    <span class="metric-title">COMPLETED WEEKS</span>
-                    <span class="metric-value">05 / 05</span>
-                    <span class="metric-footer">Campaign Performance</span>
-                </div>
-                <div class="intel-card metric-box">
-                    <span class="metric-title">ALLIANCE STANDING</span>
-                    <span class="metric-value">RANK 1</span>
-                    <span class="metric-footer">Dominating Local Region</span>
-                </div>
-            </div>
         </section>
 
-        <section id="tab-weapons" class="tab-pane">
+        <section class="panel-section">
             <div class="intel-card">
                 <h3>WEAPON STOCKPILE SUBMISSION</h3>
                 <form id="weaponForm">
@@ -85,53 +66,6 @@
                         <input type="number" id="weaponQty" min="0" placeholder="e.g. 500" required>
                     </div>
                     <button type="submit" class="action-btn">DISPATCH ARSENAL DATA</button>
-                </form>
-            </div>
-        </section>
-
-        <section id="tab-bank" class="tab-pane">
-            <div class="intel-card">
-                <h3>CYCLE PAYROLL AND METRIC DEPOSIT</h3>
-                <form id="bankForm">
-                    <div class="form-group">
-                        <label>Select Alliance Member</label>
-                        <select class="player-dropdown" id="bankPlayerSelect" required></select>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Border Days</label>
-                            <input type="number" id="borderDays" min="0" placeholder="Days">
-                        </div>
-                        <div class="form-group">
-                            <label>Border Medals</label>
-                            <input type="number" id="borderMedals" min="0" placeholder="Medals">
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Regional Points</label>
-                            <input type="number" id="regionalPoints" min="0" placeholder="Points">
-                        </div>
-                        <div class="form-group">
-                            <label>Regional Medals</label>
-                            <input type="number" id="regionalMedals" min="0" placeholder="Medals">
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Disruption Medals</label>
-                            <input type="number" id="disruptionMedals" min="0" placeholder="Medals">
-                        </div>
-                        <div class="form-group">
-                            <label>Total Donated Gold</label>
-                            <input type="number" id="totalDonated" min="0" placeholder="Total Donated">
-                        </div>
-                    </div>
-
-                    <button type="submit" class="action-btn">TRANSMIT TO BANK ACCOUNTING</button>
                 </form>
             </div>
         </section>

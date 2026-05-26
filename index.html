@@ -3,75 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Euro Ascendancy HQ</title>
+    <title>Euro Ascendancy Panel</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <header class="alliance-banner">
-        <div class="banner-title">EURO ASCENDANCY</div>
-        <div class="banner-subtitle">OFFICIAL ALLIANCE OPERATIONS PANEL</div>
-    </header>
-
-    <main class="main-content">
-        
-        <section class="panel-section">
-            <div class="intel-card header-card">
-                <h3>SUPREME COMMAND DIRECTIVE</h3>
-                <p class="propaganda-text">
-                    Sovereignty is secured through absolute military supremacy and ironclad economic coordination. Complete your tracking logs, coordinate your stockpiles, and declare your battlefield returns. Victory is non-negotiable.
-                </p>
+    <div class="container">
+        <h2>ALLIANCE OPERATIONS PANEL</h2>
+        <form id="trackerForm">
+            <div class="form-group">
+                <label>Select Alliance Member</label>
+                <select id="playerSelect" required>
+                    <option value="">-- Choose Player --</option>
+                    <option value="kkoedb">kkoedb</option>
+                    <option value="Ant Rose">Ant Rose</option>
+                    <option value="The Notorious One">The Notorious One</option>
+                    <option value="lowly poly">lowly poly</option>
+                    <option value="pioneer9">pioneer9</option>
+                    <option value="Icyz">Icyz</option>
+                    <option value="vipeR.">vipeR.</option>
+                    <option value="TheOrthodoxone">TheOrthodoxone</option>
+                    <option value="Da0Y Khan">Da0Y Khan</option>
+                    <option value="AlbertRivera">AlbertRivera</option>
+                    <option value="Al Capone">Al Capone</option>
+                    <option value="ReedyTurnip">ReedyTurnip</option>
+                    <option value="kalikaka">kalikaka</option>
+                    <option value="JohnCox93">JohnCox93</option>
+                    <option value="WonderfulWand">WonderfulWand</option>
+                    <option value="Stonehatch">Stonehatch</option>
+                    <option value="Konan">Konan</option>
+                    <option value="Rhysand">Rhysand</option>
+                    <option value="Yuki Suou">Yuki Suou</option>
+                    <option value="Gaby0">Gaby0</option>
+                </select>
             </div>
-        </section>
 
-        <section class="panel-section">
-            <div class="intel-card">
-                <h3>WEAPON STOCKPILE SUBMISSION</h3>
-                <form id="weaponForm">
-                    <div class="form-group">
-                        <label>Select Alliance Member</label>
-                        <select class="player-dropdown" id="playerSelect" required></select>
-                    </div>
-                    <div class="form-group">
-                        <label>Select Asset Type</label>
-                        <select id="weaponSelect" required>
-                            <option value="">-- Choose Weapon --</option>
-                            <option value="ICBM">ICBM</option>
-                            <option value="BRBM">BRBM</option>
-                            <option value="SRBM">SRBM</option>
-                            <option value="MRBM">MRBM</option>
-                            <option value="IRBM">IRBM</option>
-                            <option value="GHOST">GHOST</option>
-                            <option value="M240">M240</option>
-                            <option value="M16 Rifle">M16 Rifle</option>
-                            <option value="Frigate">Frigate</option>
-                            <option value="Submarine">Submarine</option>
-                            <option value="SPG-9">SPG-9</option>
-                            <option value="2S25">2S25</option>
-                            <option value="Destroyer">Destroyer</option>
-                            <option value="BM-21">BM-21</option>
-                            <option value="T-90MS">T-90MS</option>
-                            <option value="Abrams M1A2">Abrams M1A2</option>
-                            <option value="Merkava">Merkava</option>
-                            <option value="Striker 40">Striker 40</option>
-                            <option value="Patrol Boat">Patrol Boat</option>
-                            <option value="M41-DK1">M41-DK1</option>
-                            <option value="Cruiser">Cruiser</option>
-                            <option value="Challenger 2">Challenger 2</option>
-                            <option value="F-22 Raptor">F-22 Raptor</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Update Total Stockpile Count</label>
-                        <input type="number" id="weaponQty" min="0" placeholder="e.g. 500" required>
-                    </div>
-                    <button type="submit" class="action-btn">DISPATCH ARSENAL DATA</button>
-                </form>
+            <div class="form-group">
+                <label>Select Asset Type</label>
+                <select id="weaponSelect" required>
+                    <option value="">-- Choose Weapon --</option>
+                    <option value="ICBM">ICBM</option>
+                    <option value="BRBM">BRBM</option>
+                    <option value="SRBM">SRBM</option>
+                    <option value="MRBM">MRBM</option>
+                    <option value="IRBM">IRBM</option>
+                    <option value="GHOST">GHOST</option>
+                    <option value="M240">M240</option>
+                    <option value="M16 Rifle">M16 Rifle</option>
+                    <option value="Frigate">Frigate</option>
+                    <option value="Submarine">Submarine</option>
+                    <option value="SPG-9">SPG-9</option>
+                    <option value="2S25">2S25</option>
+                    <option value="Destroyer">Destroyer</option>
+                    <option value="BM-21">BM-21</option>
+                    <option value="T-90MS">T-90MS</option>
+                    <option value="Abrams M1A2">Abrams M1A2</option>
+                    <option value="Merkava">Merkava</option>
+                    <option value="Striker 40">Striker 40</option>
+                    <option value="Patrol Boat">Patrol Boat</option>
+                    <option value="M41-DK1">M41-DK1</option>
+                    <option value="Cruiser">Cruiser</option>
+                    <option value="Challenger 2">Challenger 2</option>
+                    <option value="F-22 Raptor">F-22 Raptor</option>
+                </select>
             </div>
-        </section>
 
-    </main>
+            <div class="form-group">
+                <label>Update Total Stockpile Count</label>
+                <input type="number" id="quantityInput" min="0" placeholder="e.g. 500" required>
+            </div>
 
+            <button type="submit" id="submitBtn">DISPATCH DATA</button>
+        </form>
+    </div>
     <script src="app.js"></script>
 </body>
 </html>

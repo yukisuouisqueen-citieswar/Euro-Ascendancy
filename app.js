@@ -1,4 +1,4 @@
-const MACRO_URL = "https://script.google.com/macros/s/AKfycby2fbuMwKxz84SQTDnjg01gIuy_eF7Iz3rTpa-Fbh0GLUxu3DYu8xeF0EILCk5VD2Qk/exec";
+const MACRO_URL = "https://script.google.com/macros/s/AKfycbw3fZERCyr42rUaM3YjuYPX9L8QuPPphH5g2AQS_3-GLTiKzyfqcs_vPqFkwmvTACuB/exec";
 
 let activeSessionUser = "";
 let currentCachedWeapons = {}; // Client-side cache memory for updates

@@ -6,6 +6,7 @@ let currentCachedWeapons = {};
 // --- ENGINE MODULE A: AUTHENTICATION LOGIN ROUTINE ---
 document.getElementById('loginForm').addEventListener('submit', function(e) {
     e.preventDefault();
+    e.stopPropagation(); // Stops the form from bubbling up and reloading
     const btn = document.getElementById('loginBtn');
     const user = document.getElementById('loginUser').value;
     const pass = document.getElementById('loginPass').value;
@@ -53,6 +54,7 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
 // --- ENGINE MODULE B: BACKGROUND WEAPONS DISPATCH ---
 document.getElementById('trackerForm').addEventListener('submit', function(e) {
     e.preventDefault();
+    e.stopPropagation(); // Stops the form from bubbling up and reloading
     
     const weapon = document.getElementById('weaponSelect').value;
     const qty = document.getElementById('quantityInput').value;

@@ -15,28 +15,34 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
 
     fetch(MACRO_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        mode: 'cors', 
+        credentials: 'omit',
+        redirect: 'follow',
+        headers: { 
+            'Content-Type': 'text/plain;charset=utf-8' 
+        },
         body: JSON.stringify({ action: "login", player: user, password: pass })
     })
-    .then(res => res.json())
+    .then(res => {
+        if (!res.ok) throw new Error("Network response was not ok");
+        return res.json();
+    })
     .then(data => {
         if (data.status === "success") {
             activeSessionUser = user;
-            currentCachedWeapons = data.weapons || {}; // Cache current stock numbers
+            currentCachedWeapons = data.weapons || {}; 
             
             document.getElementById('loginPass').value = "";
             document.getElementById('loginWrapper').style.display = "none";
             document.getElementById('appWorkspace').style.display = "block";
             document.getElementById('workspaceTitle').innerText = `OPERATIVE: ${user.toUpperCase()}`;
 
-            // Check security permissions for Administrative Desk
             if (user === "Yuki Suou" || user === "Icyz" || user === "kalikaka") {
                 document.getElementById('adminTabBtn').style.display = "block";
             } else {
                 document.getElementById('adminTabBtn').style.display = "none";
             }
 
-            // Render inventory grid and banking log layout views
             renderWeaponsGrid(currentCachedWeapons);
             renderLedgerBox(data.bankHistory);
             switchToTab('weaponsPane'); 
@@ -44,13 +50,15 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
             alert("Security Denied: " + data.message);
         }
     })
-    .catch(err => alert("Connection failure verifying login path: " + err))
+    .catch(err => {
+        alert("Connection failure verifying login path: " + err);
+        console.error(err);
+    })
     .finally(() => {
         btn.disabled = false;
         btn.innerText = "ACCESS DATABASE";
     });
 });
-
 // --- ENGINE MODULE B: INSTANT BACKGROUND WEAPONS DISPATCH ---
 document.getElementById('trackerForm').addEventListener('submit', function(e) {
     e.preventDefault();

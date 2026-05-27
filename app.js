@@ -153,6 +153,21 @@ function renderWeaponsGrid(weaponsObj) {
 
     let html = "";
     Object.keys(weaponsObj).sort().forEach(wKey => {
+        let rawVal = weaponsObj[wKey];
+        // If it's a number, format it nicely. If it's text like "View Sheet", show it as text instead of breaking.
+        let displayValue = (rawVal !== "" && !isNaN(rawVal)) ? Number(rawVal).toLocaleString() : rawVal;
+        if (displayValue === "") displayValue = "0";
+
+        html += `<div style="display:flex; justify-content:space-between; padding:4px 8px; background:rgba(0,0,0,0.2); border-radius:2px;">
+            <span style="color: var(--cream); font-weight:500;">${wKey}:</span>
+            <span style="font-weight:bold; color:white;">${displayValue}</span>
+        </div>`;
+    });
+    grid.innerHTML = html;
+}
+
+    let html = "";
+    Object.keys(weaponsObj).sort().forEach(wKey => {
         const value = weaponsObj[wKey] !== "" ? Number(weaponsObj[wKey]).toLocaleString() : "0";
         html += `<div style="display:flex; justify-content:space-between; padding:4px 8px; background:rgba(0,0,0,0.2); border-radius:2px;">
             <span style="color: var(--cream); font-weight:500;">${wKey}:</span>

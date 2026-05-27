@@ -1,9 +1,9 @@
-const MACRO_URL = "https://script.google.com/macros/s/AKfycbwWTPV9lzkM39Zbq7eYVhQCVcnKJ8B7zkPc71cybY6_HadZTLl-Uu0dhe0vme9sSR8/exec";
+const MACRO_URL = "https://script.google.com/macros/s/AKfycbzdacFS8fTQiWCoFxPAcEe_gmG7yO2YEMk04BaWZ_i4myBcc8esKc1Lkot72spKtezb/exec";
 
 let activeSessionUser = "";
-let currentCachedWeapons = {}; // Client-side cache memory for updates
+let currentCachedWeapons = {};
 
-// --- ENGINE MODULE A: AUTHENTICATION LOGIN ROUTINE (UPGRADED TO JSONP) ---
+// --- ENGINE MODULE A: AUTHENTICATION LOGIN ROUTINE ---
 document.getElementById('loginForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const btn = document.getElementById('loginBtn');
@@ -13,18 +13,11 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     btn.disabled = true;
     btn.innerText = "AUTHENTICATING...";
 
-    // Generate a unique fallback callback identifier name for Google
-    const callbackName = 'google_jsonp_callback_' + Math.round(100000 * Math.random());
-    
-    // Create a global intercept function to catch the incoming weapon numbers
-    window[callbackName] = function(data) {
-        // Clean up memory after receiving data
-        delete window[callbackName];
-        document.body.removeChild(scriptTag);
-        
-        btn.disabled = false;
-        btn.innerText = "ACCESS DATABASE";
+    const fetchUrl = `${MACRO_URL}?action=login&player=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`;
 
+    fetch(fetchUrl)
+    .then(res => res.json())
+    .then(data => {
         if (data.status === "success") {
             activeSessionUser = user;
             currentCachedWeapons = data.weapons || {}; 
@@ -46,34 +39,25 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
         } else {
             alert("Security Denied: " + data.message);
         }
-    };
-
-    // Append script element to open the data stream channel
-    const jsonpUrl = `${MACRO_URL}?callback=${callbackName}&player=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`;
-    const scriptTag = document.createElement('script');
-    scriptTag.src = jsonpUrl;
-    scriptTag.onerror = function() {
-        alert("Connection path timeout or structural script rejection.");
+    })
+    .catch(err => {
+        alert("Verification route error: " + err);
+        console.error(err);
+    })
+    .finally(() => {
         btn.disabled = false;
         btn.innerText = "ACCESS DATABASE";
-    };
-    document.body.appendChild(scriptTag);
+    });
 });
-// --- ENGINE MODULE B: INSTANT BACKGROUND WEAPONS DISPATCH ---
+
+// --- ENGINE MODULE B: BACKGROUND WEAPONS DISPATCH ---
 document.getElementById('trackerForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
     const weapon = document.getElementById('weaponSelect').value;
     const qty = document.getElementById('quantityInput').value;
 
-    const payload = {
-        action: "weapon",
-        player: activeSessionUser,
-        weapon: weapon,
-        quantity: qty
-    };
-
-    // MULTI-THREADED OPTIMISTIC UPDATE: Alter local UI stock display instantly
+    // Optimistic Update: instantly flash new count to client grid UI
     currentCachedWeapons[weapon] = qty;
     renderWeaponsGrid(currentCachedWeapons);
 
@@ -82,54 +66,17 @@ document.getElementById('trackerForm').addEventListener('submit', function(e) {
     document.getElementById('weaponSelect').value = "";
     document.getElementById('quantityInput').value = "";
 
-    fetch(MACRO_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    }).catch(err => console.error("Background sync weapon exception: ", err));
+    const submitUrl = `${MACRO_URL}?action=weapon&player=${encodeURIComponent(activeSessionUser)}&weapon=${encodeURIComponent(weapon)}&quantity=${encodeURIComponent(qty)}`;
+
+    fetch(submitUrl, { method: 'GET', mode: 'no-cors' })
+    .catch(err => console.error("Background sync exception: ", err));
 });
 
-// --- ENGINE MODULE C: FINANCE DESK LOG ENTRIES SUBMISSION ---
-document.getElementById('adminBankForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    const target = document.getElementById('adminTargetPlayer').value;
-    const type = document.getElementById('adminTransType').value;
-    const amt = document.getElementById('adminAmount').value;
-    const notes = document.getElementById('adminNotes').value;
-
-    const payload = {
-        action: "bankTransaction",
-        player: target,
-        transactionType: type,
-        amount: amt,
-        notes: notes,
-        borderDays: document.getElementById('mBorderDays').value,
-        borderMedals: document.getElementById('mBorderMedals').value,
-        regionalPoints: document.getElementById('mRegPoints').value,
-        regionalMedals: document.getElementById('mRegMedals').value,
-        disruptionMedals: document.getElementById('mDisMedals').value,
-        totalDonated: document.getElementById('mTotalDonated').value
-    };
-
-    alert(`Financial settlement transmitted for player ${target}! Posting to background ledger...`);
-    document.getElementById('adminBankForm').reset();
-
-    fetch(MACRO_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    }).catch(err => console.error("Background admin bank log issue: ", err));
-});
-
-// UI RENDERING & TAB CHANGING ENGINE LOGIC
+// UI RENDERING & NAVIGATION TAB CONFIGURATIONS
 function switchToTab(paneId) {
     document.querySelectorAll('.app-pane').forEach(p => p.style.display = "none");
     document.getElementById(paneId).style.display = "block";
     
-    // Switch navigation button accents cleanly
     document.querySelectorAll('.nav-toggle-btn').forEach(b => {
         b.style.borderColor = "transparent";
         b.style.color = "#A8A8B3";
@@ -157,24 +104,12 @@ function renderWeaponsGrid(weaponsObj) {
     let html = "";
     Object.keys(weaponsObj).sort().forEach(wKey => {
         let rawVal = weaponsObj[wKey];
-        // If it's a number, format it nicely. If it's text like "View Sheet", show it as text instead of breaking.
         let displayValue = (rawVal !== "" && !isNaN(rawVal)) ? Number(rawVal).toLocaleString() : rawVal;
         if (displayValue === "") displayValue = "0";
 
         html += `<div style="display:flex; justify-content:space-between; padding:4px 8px; background:rgba(0,0,0,0.2); border-radius:2px;">
             <span style="color: var(--cream); font-weight:500;">${wKey}:</span>
             <span style="font-weight:bold; color:white;">${displayValue}</span>
-        </div>`;
-    });
-    grid.innerHTML = html;
-}
-
-    let html = "";
-    Object.keys(weaponsObj).sort().forEach(wKey => {
-        const value = weaponsObj[wKey] !== "" ? Number(weaponsObj[wKey]).toLocaleString() : "0";
-        html += `<div style="display:flex; justify-content:space-between; padding:4px 8px; background:rgba(0,0,0,0.2); border-radius:2px;">
-            <span style="color: var(--cream); font-weight:500;">${wKey}:</span>
-            <span style="font-weight:bold; color:white;">${value}</span>
         </div>`;
     });
     grid.innerHTML = html;

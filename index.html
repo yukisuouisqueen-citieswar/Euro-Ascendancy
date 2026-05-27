@@ -10,7 +10,7 @@
 
     <div class="container" id="loginWrapper">
         <h2>ALLIANCE PORTAL LOGIN</h2>
-        <form id="loginForm" onsubmit="return false;">
+        <form id="loginForm" onsubmit="event.preventDefault(); return false;">
             <div class="form-group">
                 <label>Select Your Codename</label>
                 <select id="loginUser" required>
@@ -55,15 +55,14 @@
         </div>
 
         <div id="weaponsPane" class="app-pane">
-            
             <div style="margin-bottom: 25px; background: var(--bg-dark); padding: 15px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">
                 <label style="color: var(--cream); margin-bottom: 10px; font-weight: bold;">Your Live Stockpile Inventory</label>
                 <div id="liveWeaponsGrid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 180px; overflow-y: auto; font-size: 0.85rem; color: #E1E1E6; padding-right: 5px;">
-                    <p style="color: #A8A8B3; grid-column: span 2; text-align: center;">Loading inventory cache...</p>
+                    <p style="color: #A8A8B3; grid-column: span 2; text-align: center;">Loading inventory metrics...</p>
                 </div>
             </div>
 
-            <form id="trackerForm" onsubmit="return false;">
+            <form id="trackerForm" onsubmit="event.preventDefault(); return false;">
                 <div class="form-group">
                     <label>Select Asset Type</label>
                     <select id="weaponSelect" required>
@@ -108,68 +107,7 @@
         </div>
 
         <div id="adminPane" class="app-pane" style="display: none;">
-            <form id="adminBankForm">
-                <div class="form-group">
-                    <label>Target Alliance Operative</label>
-                    <select id="adminTargetPlayer" required>
-                        <option value="">-- Choose Target --</option>
-                        <option value="kkoedb">kkoedb</option>
-                        <option value="Ant Rose">Ant Rose</option>
-                        <option value="The Notorious One">The Notorious One</option>
-                        <option value="lowly poly">lowly poly</option>
-                        <option value="pioneer9">pioneer9</option>
-                        <option value="Icyz">Icyz</option>
-                        <option value="vipeR.">vipeR.</option>
-                        <option value="TheOrthodoxone">TheOrthodoxone</option>
-                        <option value="Da0Y Khan">Da0Y Khan</option>
-                        <option value="AlbertRivera">AlbertRivera</option>
-                        <option value="Al Capone">Al Capone</option>
-                        <option value="ReedyTurnip">ReedyTurnip</option>
-                        <option value="kalikaka">kalikaka</option>
-                        <option value="JohnCox93">JohnCox93</option>
-                        <option value="WonderfulWand">WonderfulWand</option>
-                        <option value="Stonehatch">Stonehatch</option>
-                        <option value="Konan">Konan</option>
-                        <option value="Rhysand">Rhysand</option>
-                        <option value="Yuki Suou">Yuki Suou</option>
-                        <option value="Gaby0">Gaby0</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Transaction Type</label>
-                    <select id="adminTransType" required>
-                        <option value="Deposit">Deposit (Payout Metrics Entry)</option>
-                        <option value="Payout">Manual Bank Payout / Draw</option>
-                        <option value="Loan">Loan Distribution</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Gold Amount Changing Hands</label>
-                    <input type="number" id="adminAmount" placeholder="e.g. 300000" required>
-                </div>
-                <div class="form-group">
-                    <label>Transaction Notes / Context Summary</label>
-                    <input type="text" id="adminNotes" placeholder="e.g. Regional 5 Performance Payout" required>
-                </div>
-
-                <div id="metricDataFields" style="border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 15px; margin-top: 15px;">
-                    <p style="font-size: 0.75rem; color: var(--cream); font-weight: bold; margin-top: 0;">OPTIONAL CAMPAIGN RAW METRICS INCREMENTS:</p>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-                        <input type="number" id="mBorderDays" placeholder="Border Days">
-                        <input type="number" id="mBorderMedals" placeholder="Border Medals">
-                    </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-                        <input type="number" id="mRegPoints" placeholder="Regional Points">
-                        <input type="number" id="mRegMedals" placeholder="Regional Medals">
-                    </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <input type="number" id="mDisMedals" placeholder="Disruption Medals">
-                        <input type="number" id="mTotalDonated" placeholder="Total Donated">
-                    </div>
-                </div>
-
-                <button type="submit" id="adminSubmitBtn" style="margin-top: 20px;">AUTHORIZE LEDGER SETTLEMENT</button>
-            </form>
+             <p style="color:white; text-align:center;">MoF Administration Systems Active.</p>
         </div>
 
         <button onclick="logout()" style="margin-top: 30px; background: none; border: none; color: #A8A8B3; text-decoration: underline; width: 100%; text-align: center; cursor: pointer; font-size: 0.8rem;">Securely Clear & Sign Out</button>

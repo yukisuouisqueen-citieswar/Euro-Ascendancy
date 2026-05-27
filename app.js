@@ -1,4 +1,4 @@
-const MACRO_URL = "https://script.google.com/macros/s/AKfycbygKMX4OTu6VJPSgkdyOs_5_ktmTZ3jNrxKeW_1uxpqk6ycmsthtPsExnxUNtIEBVrJ/exec";
+const MACRO_URL = "https://script.google.com/macros/s/AKfycby2fbuMwKxz84SQTDnjg01gIuy_eF7Iz3rTpa-Fbh0GLUxu3DYu8xeF0EILCk5VD2Qk/exec";
 
 let activeSessionUser = "";
 let currentCachedWeapons = {}; // Client-side cache memory for updates
@@ -13,20 +13,13 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     btn.disabled = true;
     btn.innerText = "AUTHENTICATING...";
 
+    // Use clean, low-level text fetching to clear out network firewall rules
     fetch(MACRO_URL, {
         method: 'POST',
-        mode: 'cors', 
-        credentials: 'omit',
-        redirect: 'follow',
-        headers: { 
-            'Content-Type': 'text/plain;charset=utf-8' 
-        },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: JSON.stringify({ action: "login", player: user, password: pass })
     })
-    .then(res => {
-        if (!res.ok) throw new Error("Network response was not ok");
-        return res.json();
-    })
+    .then(res => res.json())
     .then(data => {
         if (data.status === "success") {
             activeSessionUser = user;
@@ -59,6 +52,7 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
         btn.innerText = "ACCESS DATABASE";
     });
 });
+
 // --- ENGINE MODULE B: INSTANT BACKGROUND WEAPONS DISPATCH ---
 document.getElementById('trackerForm').addEventListener('submit', function(e) {
     e.preventDefault();

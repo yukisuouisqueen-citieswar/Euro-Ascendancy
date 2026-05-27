@@ -1,4 +1,4 @@
-const MACRO_URL = "https://script.google.com/macros/s/AKfycbzdacFS8fTQiWCoFxPAcEe_gmG7yO2YEMk04BaWZ_i4myBcc8esKc1Lkot72spKtezb/exec";
+const MACRO_URL = "https://script.google.com/macros/s/AKfycbyf-VN5dWyI3_jUmcjlNGZcCnWNYTPow8As7VrnQasPp0f7l-4HMRhQS-Sx3OZR4JBq/exec";
 
 let activeSessionUser = "";
 let currentCachedWeapons = {};
@@ -6,7 +6,8 @@ let currentCachedWeapons = {};
 // --- ENGINE MODULE A: AUTHENTICATION LOGIN ROUTINE ---
 document.getElementById('loginForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    e.stopPropagation(); // Stops the form from bubbling up and reloading
+    e.stopPropagation();
+
     const btn = document.getElementById('loginBtn');
     const user = document.getElementById('loginUser').value;
     const pass = document.getElementById('loginPass').value;
@@ -16,8 +17,11 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
 
     const fetchUrl = `${MACRO_URL}?action=login&player=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`;
 
-    fetch(fetchUrl)
-    .then(res => res.json())
+    fetch(fetchUrl, { method: 'GET' })
+    .then(res => {
+        if (!res.ok) throw new Error("Google server dropped connection packet.");
+        return res.json();
+    })
     .then(data => {
         if (data.status === "success") {
             activeSessionUser = user;
@@ -42,7 +46,7 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
         }
     })
     .catch(err => {
-        alert("Verification route error: " + err);
+        alert("Verification route connection error. Clear browser cache and try again.");
         console.error(err);
     })
     .finally(() => {
@@ -54,12 +58,12 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
 // --- ENGINE MODULE B: BACKGROUND WEAPONS DISPATCH ---
 document.getElementById('trackerForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    e.stopPropagation(); // Stops the form from bubbling up and reloading
+    e.stopPropagation();
     
     const weapon = document.getElementById('weaponSelect').value;
     const qty = document.getElementById('quantityInput').value;
 
-    // Optimistic Update: instantly flash new count to client grid UI
+    // Optimistic Update: instantly flash new count to client grid UI layout
     currentCachedWeapons[weapon] = qty;
     renderWeaponsGrid(currentCachedWeapons);
 
@@ -74,7 +78,6 @@ document.getElementById('trackerForm').addEventListener('submit', function(e) {
     .catch(err => console.error("Background sync exception: ", err));
 });
 
-// UI RENDERING & NAVIGATION TAB CONFIGURATIONS
 function switchToTab(paneId) {
     document.querySelectorAll('.app-pane').forEach(p => p.style.display = "none");
     document.getElementById(paneId).style.display = "block";

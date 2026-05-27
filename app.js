@@ -1,9 +1,9 @@
-const MACRO_URL = "https://script.google.com/macros/s/AKfycbzPsxavwdX-0ip8AWvmRS8axXVH00wk5iA0HLFbFV_fww4VFaAjLhAhbMNX3qpAFKUn/exec";
+const MACRO_URL = "https://script.google.com/macros/s/AKfycbwWTPV9lzkM39Zbq7eYVhQCVcnKJ8B7zkPc71cybY6_HadZTLl-Uu0dhe0vme9sSR8/exec";
 
 let activeSessionUser = "";
 let currentCachedWeapons = {}; // Client-side cache memory for updates
 
-// --- ENGINE MODULE A: AUTHENTICATION LOGIN ROUTINE ---
+// --- ENGINE MODULE A: AUTHENTICATION LOGIN ROUTINE (UPGRADED TO JSONP) ---
 document.getElementById('loginForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const btn = document.getElementById('loginBtn');
@@ -13,49 +13,52 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     btn.disabled = true;
     btn.innerText = "AUTHENTICATING...";
 
-    // Force mode to no-cors so the browser never blocks the dispatch line
-    fetch(MACRO_URL + "?userCheck=" + encodeURIComponent(user) + "&passCheck=" + encodeURIComponent(pass), {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action: "login", player: user, password: pass })
-    })
-    .then(() => {
-        // Since no-cors succeeds automatically by bypassing the gate, we log them in instantly
-        activeSessionUser = user;
+    // Generate a unique fallback callback identifier name for Google
+    const callbackName = 'google_jsonp_callback_' + Math.round(100000 * Math.random());
+    
+    // Create a global intercept function to catch the incoming weapon numbers
+    window[callbackName] = function(data) {
+        // Clean up memory after receiving data
+        delete window[callbackName];
+        document.body.removeChild(scriptTag);
         
-        document.getElementById('loginPass').value = "";
-        document.getElementById('loginWrapper').style.display = "none";
-        document.getElementById('appWorkspace').style.display = "block";
-        document.getElementById('workspaceTitle').innerText = `OPERATIVE: ${user.toUpperCase()}`;
-
-        if (user === "Yuki Suou" || user === "Icyz" || user === "kalikaka") {
-            document.getElementById('adminTabBtn').style.display = "block";
-        } else {
-            document.getElementById('adminTabBtn').style.display = "none";
-        }
-
-        // Initialize fallback structure if data loop takes an extra second to bind
-        currentCachedWeapons = {
-            "ICBM": "View Sheet", "BRBM": "View Sheet", "SRBM": "View Sheet", "MRBM": "View Sheet", "IRBM": "View Sheet",
-            "GHOST": "View Sheet", "M240": "View Sheet", "M16 Rifle": "View Sheet", "Frigate": "View Sheet", "Submarine": "View Sheet",
-            "SPG-9": "View Sheet", "2S25": "View Sheet", "Destroyer": "View Sheet", "BM-21": "View Sheet", "T-90MS": "View Sheet",
-            "Abrams M1A2": "View Sheet", "Merkava": "View Sheet", "Striker 40": "View Sheet", "Patrol Boat": "View Sheet",
-            "M41-DK1": "View Sheet", "Cruiser": "View Sheet", "Challenger 2": "View Sheet", "F-22 Raptor": "View Sheet"
-        };
-
-        renderWeaponsGrid(currentCachedWeapons);
-        switchToTab('weaponsPane'); 
-    })
-    .catch(err => {
-        alert("Fatal core error: " + err);
-    })
-    .finally(() => {
         btn.disabled = false;
         btn.innerText = "ACCESS DATABASE";
-    });
-});
 
+        if (data.status === "success") {
+            activeSessionUser = user;
+            currentCachedWeapons = data.weapons || {}; 
+            
+            document.getElementById('loginPass').value = "";
+            document.getElementById('loginWrapper').style.display = "none";
+            document.getElementById('appWorkspace').style.display = "block";
+            document.getElementById('workspaceTitle').innerText = `OPERATIVE: ${user.toUpperCase()}`;
+
+            if (user === "Yuki Suou" || user === "Icyz" || user === "kalikaka") {
+                document.getElementById('adminTabBtn').style.display = "block";
+            } else {
+                document.getElementById('adminTabBtn').style.display = "none";
+            }
+
+            renderWeaponsGrid(currentCachedWeapons);
+            renderLedgerBox(data.bankHistory);
+            switchToTab('weaponsPane'); 
+        } else {
+            alert("Security Denied: " + data.message);
+        }
+    };
+
+    // Append script element to open the data stream channel
+    const jsonpUrl = `${MACRO_URL}?callback=${callbackName}&player=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`;
+    const scriptTag = document.createElement('script');
+    scriptTag.src = jsonpUrl;
+    scriptTag.onerror = function() {
+        alert("Connection path timeout or structural script rejection.");
+        btn.disabled = false;
+        btn.innerText = "ACCESS DATABASE";
+    };
+    document.body.appendChild(scriptTag);
+});
 // --- ENGINE MODULE B: INSTANT BACKGROUND WEAPONS DISPATCH ---
 document.getElementById('trackerForm').addEventListener('submit', function(e) {
     e.preventDefault();

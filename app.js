@@ -3,7 +3,7 @@ const MACRO_URL = "https://script.google.com/macros/s/AKfycbwgMTci23BL5VUJ95MKTu
 let activeSessionUser = "";
 let currentCachedWeapons = {};
 
-// --- ENGINE MODULE A: AUTHENTICATION LOGIN ROUTINE ---
+// --- ENGINE MODULE A: AUTHENTICATION LOGIN ROUTINE (BULLETPROOF JSONP) ---
 document.getElementById('loginForm').addEventListener('submit', function(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -15,25 +15,18 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     btn.disabled = true;
     btn.innerText = "AUTHENTICATING...";
 
-    const params = new URLSearchParams({
-        action: "login",
-        player: user,
-        password: pass
-    });
+    // Create a temporary, random callback function name to handle incoming data safely
+    const callbackName = 'jsonp_handler_' + Math.round(100000 * Math.random());
+    
+    // Create the global interceptor to catch Google's package response data
+    window[callbackName] = function(data) {
+        // Clean up memory and remove temporary tags immediately
+        delete window[callbackName];
+        document.body.removeChild(scriptTag);
+        
+        btn.disabled = false;
+        btn.innerText = "ACCESS DATABASE";
 
-    const fetchUrl = `${MACRO_URL}?${params.toString()}`;
-
-    // Force mode: 'cors' and redirect: 'follow' so the browser smoothly follows Google's 302 redirection path
-    fetch(fetchUrl, { 
-        method: 'GET',
-        mode: 'cors',
-        redirect: 'follow'
-    })
-    .then(res => {
-        if (!res.ok) throw new Error("Google server dropped connection packet.");
-        return res.json();
-    })
-    .then(data => {
         if (data.status === "success") {
             activeSessionUser = user;
             currentCachedWeapons = data.weapons || {}; 
@@ -55,15 +48,22 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
         } else {
             alert("Security Denied: " + data.message);
         }
-    })
-    .catch(err => {
-        alert("Verification route connection error: " + err.message);
-        console.error(err);
-    })
-    .finally(() => {
+    };
+
+    // Inject the request parameters directly through a script loader channel
+    const jsonpUrl = `${MACRO_URL}?callback=${callbackName}&action=login&player=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`;
+    
+    const scriptTag = document.createElement('script');
+    scriptTag.src = jsonpUrl;
+    scriptTag.onerror = function() {
+        alert("The portal network path timed out. Re-verify your Macro URL link deployment.");
         btn.disabled = false;
         btn.innerText = "ACCESS DATABASE";
-    });
+        if (window[callbackName]) delete window[callbackName];
+        if (scriptTag.parentNode) document.body.removeChild(scriptTag);
+    };
+    
+    document.body.appendChild(scriptTag);
 });
 
 // --- ENGINE MODULE B: BACKGROUND WEAPONS DISPATCH ---

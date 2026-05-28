@@ -34,7 +34,7 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
             document.getElementById('loginPass').value = "";
             document.getElementById('loginWrapper').style.display = "none";
             document.getElementById('appWorkspace').style.display = "block";
-            document.getElementById('workspaceTitle').innerText = `OPERATIVE: ${user.toUpperCase()}`;
+            document.getElementById('workspaceTitle').innerText = `COMRADE: ${user.toUpperCase()}`;
 
             if (user === "Yuki Suou" || user === "Icyz" || user === "kalikaka") {
                 document.getElementById('adminTabBtn').style.display = "block";

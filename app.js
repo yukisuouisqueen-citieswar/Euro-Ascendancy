@@ -160,7 +160,84 @@ function renderLedgerBox(historyArray) {
     html += `</table>`;
     box.innerHTML = html;
 }
+// --- ENGINE MODULE C: ADMINISTRATIVE REWARDS & AUTOMATED BANKING ---
+document.getElementById('adminBankForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
 
+    const btn = document.getElementById('adminBankBtn');
+    const targetPlayer = document.getElementById('adminTargetUser').value;
+    const transType = document.getElementById('adminTransactionType').value;
+    const inputAmount = Number(document.getElementById('adminGoldAmount').value);
+    const notes = document.getElementById('adminLogNotes').value;
+
+    btn.disabled = true;
+    btn.innerText = "CALCULATING & RECORDING...";
+
+    // --- AUTOMATED GAME LOGIC MATH CALCULATOR ---
+    let finalGoldPayout = 0;
+    let calculationLog = "";
+
+    if (transType === "Regional Points") {
+        // Points x 300 = Gold
+        finalGoldPayout = inputAmount * 300;
+        calculationLog = `[Auto-Math: ${inputAmount} points x 300] `;
+    } 
+    else if (transType === "Border Day") {
+        // Days * 10,000 = Gold
+        finalGoldPayout = inputAmount * 10000;
+        calculationLog = `[Auto-Math: ${inputAmount} days up x 10k] `;
+    }
+    else if (transType === "Border Defense" || transType === "Regional Defense") {
+        // (Medals / 10) * 10,000 = Gold
+        finalGoldPayout = (inputAmount / 10) * 10000;
+        calculationLog = `[Auto-Math: ${inputAmount} medals / 10 x 10k] `;
+    }
+    else if (transType === "Disruption Medals") {
+        // (Medals / 10) * 12,000 = Gold
+        finalGoldPayout = (inputAmount / 10) * 12000;
+        calculationLog = `[Auto-Math: ${inputAmount} medals / 10 x 12k] `;
+    }
+    else {
+        // Interest Payouts or Manual Adjustments pass through directly
+        finalGoldPayout = inputAmount;
+    }
+
+    // Combine your custom notes with the automatic conversion record for clarity on the sheet
+    const finalNotes = calculationLog + notes;
+
+    const callbackName = 'bank_jsonp_' + Math.round(100000 * Math.random());
+    
+    window[callbackName] = function(data) {
+        delete window[callbackName];
+        document.body.removeChild(scriptTag);
+        
+        btn.disabled = false;
+        btn.innerText = "LOG GAME REWARD";
+
+        if (data.status === "success") {
+            alert(`Success! Dispatched ${finalGoldPayout.toLocaleString()} Gold to ${targetPlayer}'s ledger.`);
+            document.getElementById('adminBankForm').reset();
+        } else {
+            alert("Ledger rejection error: " + data.message);
+        }
+    };
+
+    // Forward the automated final gold calculation right to your Google Sheet API
+    const jsonpUrl = `${MACRO_URL}?callback=${callbackName}&action=bank&player=${encodeURIComponent(targetPlayer)}&type=${encodeURIComponent(transType)}&amount=${encodeURIComponent(finalGoldPayout)}&notes=${encodeURIComponent(finalNotes)}`;
+    
+    const scriptTag = document.createElement('script');
+    scriptTag.src = jsonpUrl;
+    scriptTag.onerror = function() {
+        alert("The server network transaction pipeline timed out.");
+        btn.disabled = false;
+        btn.innerText = "LOG GAME REWARD";
+        if (window[callbackName]) delete window[callbackName];
+        if (scriptTag.parentNode) document.body.removeChild(scriptTag);
+    };
+    
+    document.body.appendChild(scriptTag);
+});
 function logout() {
     activeSessionUser = "";
     currentCachedWeapons = {};

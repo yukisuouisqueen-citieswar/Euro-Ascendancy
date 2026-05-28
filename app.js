@@ -15,9 +15,20 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     btn.disabled = true;
     btn.innerText = "AUTHENTICATING...";
 
-    const fetchUrl = `${MACRO_URL}?action=login&player=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`;
+    const params = new URLSearchParams({
+        action: "login",
+        player: user,
+        password: pass
+    });
 
-    fetch(fetchUrl, { method: 'GET' })
+    const fetchUrl = `${MACRO_URL}?${params.toString()}`;
+
+    // Force mode: 'cors' and redirect: 'follow' so the browser smoothly follows Google's 302 redirection path
+    fetch(fetchUrl, { 
+        method: 'GET',
+        mode: 'cors',
+        redirect: 'follow'
+    })
     .then(res => {
         if (!res.ok) throw new Error("Google server dropped connection packet.");
         return res.json();
@@ -46,7 +57,7 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
         }
     })
     .catch(err => {
-        alert("Verification route connection error. Clear browser cache and try again.");
+        alert("Verification route connection error: " + err.message);
         console.error(err);
     })
     .finally(() => {

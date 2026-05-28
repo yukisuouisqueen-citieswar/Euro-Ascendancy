@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Euro Ascendancy Panel</title>
+    <title>Euro Ascendancy Weapons and Bank</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="container" id="loginWrapper">
-        <h2>ALLIANCE PORTAL LOGIN</h2>
+        <h2>Login to your EA Account</h2>
         <form id="loginForm" onsubmit="event.preventDefault(); return false;">
             <div class="form-group">
-                <label>Select Your Codename</label>
+                <label>Select your username</label>
                 <select id="loginUser" required>
-                    <option value="">-- Identify Yourself --</option>
+                    <option value="">-- Select your username --</option>
                     <option value="kkoedb">kkoedb</option>
                     <option value="Ant Rose">Ant Rose</option>
                     <option value="The Notorious One">The Notorious One</option>
@@ -38,15 +38,15 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Access Key / Password</label>
+                <label>Password</label>
                 <input type="password" id="loginPass" placeholder="••••••••" required>
             </div>
-            <button type="submit" id="loginBtn">ACCESS DATABASE</button>
+            <button type="submit" id="loginBtn">Enter EA Weapons and Bank</button>
         </form>
     </div>
 
     <div class="container" id="appWorkspace" style="display: none; max-width: 500px;">
-        <h2 id="workspaceTitle">COMMAND PORTAL</h2>
+        <h2 id="workspaceTitle">Weapons and BankL</h2>
         
         <div style="display: flex; gap: 8px; margin-bottom: 25px;">
             <button class="nav-toggle-btn" id="btnWeapons" onclick="switchToTab('weaponsPane')" style="flex: 1; padding: 12px 6px; background: #202022; border: 1px solid var(--crimson); color: white; cursor: pointer; font-weight: bold; font-size: 0.8rem; border-radius: 4px;">WEAPONS</button>
@@ -56,15 +56,15 @@
 
         <div id="weaponsPane" class="app-pane">
             <div style="margin-bottom: 25px; background: var(--bg-dark); padding: 15px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">
-                <label style="color: var(--cream); margin-bottom: 10px; font-weight: bold;">Your Live Stockpile Inventory</label>
+                <label style="color: var(--cream); margin-bottom: 10px; font-weight: bold;">Your Live Weapons Inventory</label>
                 <div id="liveWeaponsGrid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 180px; overflow-y: auto; font-size: 0.85rem; color: #E1E1E6; padding-right: 5px;">
-                    <p style="color: #A8A8B3; grid-column: span 2; text-align: center;">Loading inventory metrics...</p>
+                    <p style="color: #A8A8B3; grid-column: span 2; text-align: center;">Loading inventory numbers...</p>
                 </div>
             </div>
 
             <form id="trackerForm" onsubmit="event.preventDefault(); return false;">
                 <div class="form-group">
-                    <label>Select Asset Type</label>
+                    <label>Select Weapon Type</label>
                     <select id="weaponSelect" required>
                         <option value="">-- Choose Weapon --</option>
                         <option value="ICBM">ICBM</option>
@@ -96,7 +96,7 @@
                     <label>Update Your Current Inventory Count</label>
                     <input type="number" id="quantityInput" min="0" placeholder="e.g. 500" required>
                 </div>
-                <button type="submit" id="submitBtn">DISPATCH DATA</button>
+                <button type="submit" id="submitBtn">Save Data</button>
             </form>
         </div>
 
@@ -107,7 +107,7 @@
         </div>
 
         <div id="adminPane" class="app-pane" style="display: none;">
-             <p style="color:white; text-align:center;">MoF Administration Systems Active.</p>
+             <p style="color:white; text-align:center;">Bank System currently in development</p>
         </div>
 
         <button onclick="logout()" style="margin-top: 30px; background: none; border: none; color: #A8A8B3; text-decoration: underline; width: 100%; text-align: center; cursor: pointer; font-size: 0.8rem;">Securely Clear & Sign Out</button>

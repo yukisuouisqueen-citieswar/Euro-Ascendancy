@@ -1,4 +1,4 @@
-const MACRO_URL = "https://script.google.com/macros/s/AKfycbyf-VN5dWyI3_jUmcjlNGZcCnWNYTPow8As7VrnQasPp0f7l-4HMRhQS-Sx3OZR4JBq/exec";
+const MACRO_URL = "https://script.google.com/macros/s/AKfycbwgMTci23BL5VUJ95MKTuami2MgD6TXqo7hUP26Zixtbb1emd22VdHmAXZxwpMci-Bl/exec";
 
 let activeSessionUser = "";
 let currentCachedWeapons = {};

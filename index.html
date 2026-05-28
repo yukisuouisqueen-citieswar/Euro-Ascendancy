@@ -107,8 +107,60 @@
         </div>
 
         <div id="adminPane" class="app-pane" style="display: none;">
-             <p style="color:white; text-align:center;">Bank System currently in development</p>
+    <h3 style="color: var(--cream); border-bottom: 1px solid var(--crimson); padding-bottom: 5px; font-size: 1rem; margin-bottom: 15px;">ALLIANCE SCOREBOARD MANAGEMENT</h3>
+    
+    <form id="adminBankForm" onsubmit="event.preventDefault(); return false;">
+        <div class="form-group">
+            <label>Target Player</label>
+            <select id="adminTargetUser" required>
+                <option value="">-- Choose Account --</option>
+                <option value="kkoedb">kkoedb</option>
+                <option value="Ant Rose">Ant Rose</option>
+                <option value="The Notorious One">The Notorious One</option>
+                <option value="lowly poly">lowly poly</option>
+                <option value="pioneer9">pioneer9</option>
+                <option value="Icyz">Icyz</option>
+                <option value="vipeR.">vipeR.</option>
+                <option value="TheOrthodoxone">TheOrthodoxone</option>
+                <option value="Da0Y Khan">Da0Y Khan</option>
+                <option value="AlbertRivera">AlbertRivera</option>
+                <option value="Al Capone">Al Capone</option>
+                <option value="ReedyTurnip">ReedyTurnip</option>
+                <option value="kalikaka">kalikaka</option>
+                <option value="JohnCox93">JohnCox93</option>
+                <option value="WonderfulWand">WonderfulWand</option>
+                <option value="Stonehatch">Stonehatch</option>
+                <option value="Konan">Konan</option>
+                <option value="Rhysand">Rhysand</option>
+                <option value="Yuki Suou">Yuki Suou</option>
+                <option value="Gaby0">Gaby0</option>
+            </select>
         </div>
+
+        <div class="form-group">
+            <label>Reward / Point Category</label>
+            <select id="adminTransactionType" required>
+                <option value="">-- Choose Metric --</option>
+                <option value="Faction Points">Faction Points (+)</option>
+                <option value="Medal Award">Medal Award (+)</option>
+                <option value="Event Bonus">Event Bonus (+)</option>
+                <option value="Penalty Deduction">Penalty Deduction (-)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Amount / Score Value</label>
+            <input type="number" id="adminGoldAmount" placeholder="e.g. 50, 100, 500" required>
+        </div>
+
+        <div class="form-group">
+            <label>Match / Achievement Reference</label>
+            <input type="text" id="adminLogNotes" placeholder="e.g. Secured MVP in Alliance War Round 3" required>
+        </div>
+
+        <button type="submit" id="adminBankBtn" style="background: var(--crimson); color: white;">LOG GAME REWARD</button>
+    </form>
+    </div>
 
         <button onclick="logout()" style="margin-top: 30px; background: none; border: none; color: #A8A8B3; text-decoration: underline; width: 100%; text-align: center; cursor: pointer; font-size: 0.8rem;">Clear Data and Sign Out</button>
     </div>

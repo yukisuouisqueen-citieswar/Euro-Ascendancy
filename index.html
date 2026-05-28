@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Euro Ascendancy Weapons and Bank</title>
+    <title>Euro Ascendancy Panel</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="container" id="loginWrapper">
-        <h2>Login to your EA Account</h2>
+        <h2>ALLIANCE PORTAL LOGIN</h2>
         <form id="loginForm" onsubmit="event.preventDefault(); return false;">
             <div class="form-group">
-                <label>Select your username</label>
+                <label>Select Your Codename</label>
                 <select id="loginUser" required>
-                    <option value="">-- Select your username --</option>
+                    <option value="">-- Identify Yourself --</option>
                     <option value="kkoedb">kkoedb</option>
                     <option value="Ant Rose">Ant Rose</option>
                     <option value="The Notorious One">The Notorious One</option>
@@ -38,33 +38,33 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Password</label>
+                <label>Access Key / Password</label>
                 <input type="password" id="loginPass" placeholder="••••••••" required>
             </div>
-            <button type="submit" id="loginBtn">Enter EA Weapons and Bank</button>
+            <button type="submit" id="loginBtn">ACCESS DATABASE</button>
         </form>
     </div>
 
     <div class="container" id="appWorkspace" style="display: none; max-width: 500px;">
-        <h2 id="workspaceTitle">Weapons and BankL</h2>
+        <h2 id="workspaceTitle">COMMAND PORTAL</h2>
         
         <div style="display: flex; gap: 8px; margin-bottom: 25px;">
             <button class="nav-toggle-btn" id="btnWeapons" onclick="switchToTab('weaponsPane')" style="flex: 1; padding: 12px 6px; background: #202022; border: 1px solid var(--crimson); color: white; cursor: pointer; font-weight: bold; font-size: 0.8rem; border-radius: 4px;">WEAPONS</button>
             <button class="nav-toggle-btn" id="btnLedger" onclick="switchToTab('ledgerPane')" style="flex: 1; padding: 12px 6px; background: #202022; border: 1px solid transparent; color: #A8A8B3; cursor: pointer; font-weight: bold; font-size: 0.8rem; border-radius: 4px;">MY GOLD LOGS</button>
-            <button class="nav-toggle-btn" id="adminTabBtn" onclick="switchToTab('adminPane')" style="flex: 1; padding: 12px 6px; background: #202022; border: 1px solid transparent; color: #A8A8B3; cursor: pointer; font-weight: bold; font-size: 0.8rem; border-radius: 4px; display: none;">BANK DESK</button>
+            <button class="nav-toggle-btn" id="adminTabBtn" onclick="switchToTab('adminPane')" style="flex: 1; padding: 12px 6px; background: #202022; border: 1px solid transparent; color: #A8A8B3; cursor: pointer; font-weight: bold; font-size: 0.8rem; border-radius: 4px; display: none;">FINANCE DESK</button>
         </div>
 
         <div id="weaponsPane" class="app-pane">
             <div style="margin-bottom: 25px; background: var(--bg-dark); padding: 15px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">
-                <label style="color: var(--cream); margin-bottom: 10px; font-weight: bold;">Your Live Weapons Inventory</label>
+                <label style="color: var(--cream); margin-bottom: 10px; font-weight: bold;">Your Live Stockpile Inventory</label>
                 <div id="liveWeaponsGrid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 180px; overflow-y: auto; font-size: 0.85rem; color: #E1E1E6; padding-right: 5px;">
-                    <p style="color: #A8A8B3; grid-column: span 2; text-align: center;">Loading inventory numbers...</p>
+                    <p style="color: #A8A8B3; grid-column: span 2; text-align: center;">Loading inventory metrics...</p>
                 </div>
             </div>
 
             <form id="trackerForm" onsubmit="event.preventDefault(); return false;">
                 <div class="form-group">
-                    <label>Select Weapon Type</label>
+                    <label>Select Asset Type</label>
                     <select id="weaponSelect" required>
                         <option value="">-- Choose Weapon --</option>
                         <option value="ICBM">ICBM</option>
@@ -96,7 +96,7 @@
                     <label>Update Your Current Inventory Count</label>
                     <input type="number" id="quantityInput" min="0" placeholder="e.g. 500" required>
                 </div>
-                <button type="submit" id="submitBtn">Save Data</button>
+                <button type="submit" id="submitBtn">DISPATCH DATA</button>
             </form>
         </div>
 
@@ -107,64 +107,39 @@
         </div>
 
         <div id="adminPane" class="app-pane" style="display: none;">
-    <h3 style="color: var(--cream); border-bottom: 1px solid var(--crimson); padding-bottom: 5px; font-size: 1rem; margin-bottom: 15px;">ALLIANCE SCOREBOARD MANAGEMENT</h3>
-    
-    <form id="adminBankForm" onsubmit="event.preventDefault(); return false;">
-        <div class="form-group">
-            <label>Target Player</label>
-            <select id="adminTargetUser" required>
-                <option value="">-- Choose Account --</option>
-                <option value="kkoedb">kkoedb</option>
-                <option value="Ant Rose">Ant Rose</option>
-                <option value="The Notorious One">The Notorious One</option>
-                <option value="lowly poly">lowly poly</option>
-                <option value="pioneer9">pioneer9</option>
-                <option value="Icyz">Icyz</option>
-                <option value="vipeR.">vipeR.</option>
-                <option value="TheOrthodoxone">TheOrthodoxone</option>
-                <option value="Da0Y Khan">Da0Y Khan</option>
-                <option value="AlbertRivera">AlbertRivera</option>
-                <option value="Al Capone">Al Capone</option>
-                <option value="ReedyTurnip">ReedyTurnip</option>
-                <option value="kalikaka">kalikaka</option>
-                <option value="JohnCox93">JohnCox93</option>
-                <option value="WonderfulWand">WonderfulWand</option>
-                <option value="Stonehatch">Stonehatch</option>
-                <option value="Konan">Konan</option>
-                <option value="Rhysand">Rhysand</option>
-                <option value="Yuki Suou">Yuki Suou</option>
-                <option value="Gaby0">Gaby0</option>
-            </select>
-        </div>
+            <h3 style="color: var(--cream); border-bottom: 1px solid var(--crimson); padding-bottom: 5px; font-size: 1rem; margin-bottom: 15px;">ALLIANCE SCOREBOARD MANAGEMENT</h3>
+            
+            <form id="adminBankForm" onsubmit="event.preventDefault(); return false;">
+                <div class="form-group">
+                    <label>Target Player</label>
+                    <select id="adminTargetUser" required>
+                        <option value="">-- Choose Account --</option>
+                        <option value="kkoedb">kkoedb</option>
+                        <option value="Ant Rose">Ant Rose</option>
+                        <option value="The Notorious One">The Notorious One</option>
+                        <option value="lowly poly">lowly poly</option>
+                        <option value="pioneer9">pioneer9</option>
+                        <option value="Icyz">Icyz</option>
+                        <option value="vipeR.">vipeR.</option>
+                        <option value="TheOrthodoxone">TheOrthodoxone</option>
+                        <option value="Da0Y Khan">Da0Y Khan</option>
+                        <option value="AlbertRivera">AlbertRivera</option>
+                        <option value="Al Capone">Al Capone</option>
+                        <option value="ReedyTurnip">ReedyTurnip</option>
+                        <option value="kalikaka">kalikaka</option>
+                        <option value="JohnCox93">JohnCox93</option>
+                        <option value="WonderfulWand">WonderfulWand</option>
+                        <option value="Stonehatch">Stonehatch</option>
+                        <option value="Konan">Konan</option>
+                        <option value="Rhysand">Rhysand</option>
+                        <option value="Yuki Suou">Yuki Suou</option>
+                        <option value="Gaby0">Gaby0</option>
+                    </select>
+                </div>
 
-        <div class="form-group">
-            <label>Reward / Point Category</label>
-            <select id="adminTransactionType" required>
-                <option value="">-- Choose Metric --</option>
-                <option value="Faction Points">Faction Points (+)</option>
-                <option value="Medal Award">Medal Award (+)</option>
-                <option value="Event Bonus">Event Bonus (+)</option>
-                <option value="Penalty Deduction">Penalty Deduction (-)</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>Amount</label>
-            <input type="number" id="adminGoldAmount" placeholder="e.g. 50, 100, 500" required>
-        </div>
-
-        <div class="form-group">
-            <label>Type</label>
-            <input type="text" id="adminLogNotes" placeholder="e.g. Regionals" required>
-        </div>
-
-        <button type="submit" id="adminBankBtn" style="background: var(--crimson); color: white;">LOG GAME REWARD</button>
-    </form>
-    </div>
-
-        <button onclick="logout()" style="margin-top: 30px; background: none; border: none; color: #A8A8B3; text-decoration: underline; width: 100%; text-align: center; cursor: pointer; font-size: 0.8rem;">Clear Data and Sign Out</button>
-    </div>
-
-    <script src="app.js"></script>
-</body>
-</html>
+                <div class="form-group">
+                    <label>Activity / Reward Type</label>
+                    <select id="adminTransactionType" required>
+                        <option value="">-- Choose Activity --</option>
+                        <option value="Border Day">Border Daily Allowance (+10k per day)</option>
+                        <option value="Border Defense">Border Attack Medals (+10k

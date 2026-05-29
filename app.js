@@ -1,10 +1,9 @@
-// Paste your newest Google Web App URL right here:
 const MACRO_URL = "https://script.google.com/macros/s/AKfycbx6ZEgVTalnu42f8RlUEoMHnISu-1otpDCgHT2NgpilUyEdTWv0gQ6B9hbumXwaovqL/exec";
 
 let activeSessionUser = "";
 let currentCachedWeapons = {};
 
-// --- ENGINE MODULE A: AUTHENTICATION LOGIN ROUTINE (BULLETPROOF JSONP) ---
+// Login System
 document.getElementById('loginForm').addEventListener('submit', function(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -33,10 +32,10 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
             document.getElementById('loginWrapper').style.display = "none";
             document.getElementById('appWorkspace').style.display = "block";
             
-            // Displays name cleanly without the word Operative
+
             document.getElementById('workspaceTitle').innerText = `${user.toUpperCase()}`;
 
-            // Admin Gate Check
+            // Admin Check
             if (user === "Yuki Suou" || user === "Icyz" || user === "kalikaka") {
                 document.getElementById('adminTabBtn').style.display = "block";
             } else {
@@ -66,7 +65,7 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     document.body.appendChild(scriptTag);
 });
 
-// --- ENGINE MODULE B: BACKGROUND WEAPONS DISPATCH ---
+// Weapons System
 document.getElementById('trackerForm').addEventListener('submit', function(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -88,7 +87,7 @@ document.getElementById('trackerForm').addEventListener('submit', function(e) {
     .catch(err => console.error("Background sync exception: ", err));
 });
 
-// --- ENGINE MODULE C: ADMINISTRATIVE REWARDS & AUTOMATED BANKING ---
+// Banking System
 document.getElementById('adminBankForm').addEventListener('submit', function(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -159,7 +158,7 @@ document.getElementById('adminBankForm').addEventListener('submit', function(e) 
     document.body.appendChild(scriptTag);
 });
 
-// --- UI RENDERING & TAB NAVIGATION ---
+// UI
 function switchToTab(paneId) {
     document.querySelectorAll('.app-pane').forEach(p => p.style.display = "none");
     document.getElementById(paneId).style.display = "block";

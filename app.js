@@ -33,7 +33,7 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
             document.getElementById('loginWrapper').style.display = "none";
             document.getElementById('appWorkspace').style.display = "block";
             
-            // Customize your header title right here!
+            // Displays name cleanly without the word Operative
             document.getElementById('workspaceTitle').innerText = `${user.toUpperCase()}`;
 
             // Admin Gate Check
@@ -74,7 +74,6 @@ document.getElementById('trackerForm').addEventListener('submit', function(e) {
     const weapon = document.getElementById('weaponSelect').value;
     const qty = document.getElementById('quantityInput').value;
 
-    // Optimistic Update: instantly flash new count to client grid UI layout
     currentCachedWeapons[weapon] = qty;
     renderWeaponsGrid(currentCachedWeapons);
 
@@ -85,7 +84,6 @@ document.getElementById('trackerForm').addEventListener('submit', function(e) {
 
     const submitUrl = `${MACRO_URL}?action=weapon&player=${encodeURIComponent(activeSessionUser)}&weapon=${encodeURIComponent(weapon)}&quantity=${encodeURIComponent(qty)}`;
 
-    // Background fire-and-forget sync (No-CORS)
     fetch(submitUrl, { method: 'GET', mode: 'no-cors' })
     .catch(err => console.error("Background sync exception: ", err));
 });
@@ -104,38 +102,31 @@ document.getElementById('adminBankForm').addEventListener('submit', function(e) 
     btn.disabled = true;
     btn.innerText = "CALCULATING & RECORDING...";
 
-    // --- AUTOMATED GAME LOGIC MATH CALCULATOR ---
+    // --- AUTOMATED IN-GAME MATH SYSTEM ---
     let finalGoldPayout = 0;
     let calculationLog = "";
 
     if (transType === "Regional Points") {
-        // Points x 300 = Gold
         finalGoldPayout = inputAmount * 300;
         calculationLog = `[Auto-Math: ${inputAmount} points x 300] `;
     } 
     else if (transType === "Border Day") {
-        // Days * 10,000 = Gold
         finalGoldPayout = inputAmount * 10000;
-        calculationLog = `[Auto-Math: ${inputAmount} days up x 10k] `;
+        calculationLog = `[Auto-Math: ${inputAmount} days x 10k] `;
     }
     else if (transType === "Border Defense" || transType === "Regional Defense") {
-        // (Medals / 10) * 10,000 = Gold
         finalGoldPayout = (inputAmount / 10) * 10000;
         calculationLog = `[Auto-Math: ${inputAmount} medals / 10 x 10k] `;
     }
     else if (transType === "Disruption Medals") {
-        // (Medals / 10) * 12,000 = Gold
         finalGoldPayout = (inputAmount / 10) * 12000;
         calculationLog = `[Auto-Math: ${inputAmount} medals / 10 x 12k] `;
     }
     else {
-        // Interest Payouts or Manual Adjustments pass through directly
         finalGoldPayout = inputAmount;
     }
 
-    // Combine your custom notes with the automatic conversion record for clarity on the sheet
     const finalNotes = calculationLog + notes;
-
     const callbackName = 'bank_jsonp_' + Math.round(100000 * Math.random());
     
     window[callbackName] = function(data) {
@@ -153,7 +144,6 @@ document.getElementById('adminBankForm').addEventListener('submit', function(e) 
         }
     };
 
-    // Forward the automated final gold calculation right to your Google Sheet API
     const jsonpUrl = `${MACRO_URL}?callback=${callbackName}&action=bank&player=${encodeURIComponent(targetPlayer)}&type=${encodeURIComponent(transType)}&amount=${encodeURIComponent(finalGoldPayout)}&notes=${encodeURIComponent(finalNotes)}`;
     
     const scriptTag = document.createElement('script');
@@ -227,7 +217,6 @@ function renderLedgerBox(historyArray) {
             <th style="text-align:left; padding:8px 4px; padding-left:10px;">NOTES</th>
         </tr>`;
 
-    // Reverse the array so newest transactions show at the top
     [...historyArray].reverse().forEach(item => {
         const color = Number(item.amount) >= 0 ? "#4CAF50" : "#F44336";
         const prefix = Number(item.amount) >= 0 ? "+" : "";

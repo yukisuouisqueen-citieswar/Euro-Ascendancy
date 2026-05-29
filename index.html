@@ -142,4 +142,32 @@
                     <select id="adminTransactionType" required>
                         <option value="">-- Choose Activity --</option>
                         <option value="Border Day">Border Daily Allowance (+10k per day)</option>
-                        <option value="Border Defense">Border Attack Medals (+10k
+                        <option value="Border Defense">Border Attack Medals (+10k per 10 medals)</option>
+                        <option value="Regional Points">Regional Points (Points x 300 Gold)</option>
+                        <option value="Regional Defense">Regional Medals Gained (+10k per 10 medals)</option>
+                        <option value="Disruption Medals">Disruption Medals (+12k per 10 medals)</option>
+                        <option value="Interest Payout">Bank Interest Payout (Max 250k)</option>
+                        <option value="Manual Adjustment">Manual Adjustment / Expense (-/+)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Value / Count (Input points, days, or medals based on type)</label>
+                    <input type="number" id="adminGoldAmount" placeholder="e.g. 1000" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Match / Achievement Reference Notes</label>
+                    <input type="text" id="adminLogNotes" placeholder="e.g. Regional Round 2 performance" required>
+                </div>
+
+                <button type="submit" id="adminBankBtn" style="background: var(--crimson); color: white; font-weight: bold;">LOG GAME REWARD</button>
+            </form>
+        </div>
+
+        <button onclick="logout()" style="margin-top: 30px; background: none; border: none; color: #A8A8B3; text-decoration: underline; width: 100%; text-align: center; cursor: pointer; font-size: 0.8rem;">Securely Clear & Sign Out</button>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

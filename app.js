@@ -1,9 +1,10 @@
-const MACRO_URL = "https://script.google.com/macros/s/AKfycbx6ZEgVTalnu42f8RlUEoMHnISu-1otpDCgHT2NgpilUyEdTWv0gQ6B9hbumXwaovqL/exec";
+// Paste your newest Google Web App URL right here:
+const MACRO_URL = "https://script.google.com/macros/s/AKfycbzua_5P0LkTv4C-ZG4mqp8DHsMF_Cx_DgARaeYR62TTN9369Ddrn0gbMTP3w4nSTfYz/exec";
 
 let activeSessionUser = "";
 let currentCachedWeapons = {};
 
-// Login System
+// --- ENGINE MODULE A: AUTHENTICATION LOGIN ROUTINE (BULLETPROOF JSONP) ---
 document.getElementById('loginForm').addEventListener('submit', function(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -32,10 +33,8 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
             document.getElementById('loginWrapper').style.display = "none";
             document.getElementById('appWorkspace').style.display = "block";
             
-
             document.getElementById('workspaceTitle').innerText = `${user.toUpperCase()}`;
 
-            // Admin Check
             if (user === "Yuki Suou" || user === "Icyz" || user === "kalikaka") {
                 document.getElementById('adminTabBtn').style.display = "block";
             } else {
@@ -65,29 +64,58 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     document.body.appendChild(scriptTag);
 });
 
-// Weapons System
+// --- ENGINE MODULE B: SECURE AWAIT-CONFIRMED WEAPONS DISPATCH ---
 document.getElementById('trackerForm').addEventListener('submit', function(e) {
     e.preventDefault();
     e.stopPropagation();
     
+    const btn = document.getElementById('submitBtn');
     const weapon = document.getElementById('weaponSelect').value;
     const qty = document.getElementById('quantityInput').value;
 
-    currentCachedWeapons[weapon] = qty;
-    renderWeaponsGrid(currentCachedWeapons);
+    // Strict lock to block any multi-threaded race conditions or accidental logouts
+    btn.disabled = true;
+    btn.innerText = "UPDATING STOCKPILE...";
 
-    alert(`Arsenal logs dispatched! Updating your ${weapon} stockpile to ${qty}...`);
+    const callbackName = 'weapon_jsonp_' + Math.round(100000 * Math.random());
     
-    document.getElementById('weaponSelect').value = "";
-    document.getElementById('quantityInput').value = "";
+    window[callbackName] = function(data) {
+        delete window[callbackName];
+        document.body.removeChild(scriptTag);
+        
+        // Re-enable the system interface only after receiving server reply
+        btn.disabled = false;
+        btn.innerText = "DISPATCH DATA";
 
-    const submitUrl = `${MACRO_URL}?action=weapon&player=${encodeURIComponent(activeSessionUser)}&weapon=${encodeURIComponent(weapon)}&quantity=${encodeURIComponent(qty)}`;
+        if (data.status === "success") {
+            // Commit to the interface view screen ONLY when confirmed written to the Sheet
+            currentCachedWeapons[weapon] = qty;
+            renderWeaponsGrid(currentCachedWeapons);
+            
+            alert(`Verified! Your ${weapon} inventory count is now locked at ${Number(qty).toLocaleString()} inside the database.`);
+            document.getElementById('weaponSelect').value = "";
+            document.getElementById('quantityInput').value = "";
+        } else {
+            alert("Database rejected stockpile allocation: " + data.message);
+        }
+    };
 
-    fetch(submitUrl, { method: 'GET', mode: 'no-cors' })
-    .catch(err => console.error("Background sync exception: ", err));
+    const jsonpUrl = `${MACRO_URL}?callback=${callbackName}&action=weapon&player=${encodeURIComponent(activeSessionUser)}&weapon=${encodeURIComponent(weapon)}&quantity=${encodeURIComponent(qty)}`;
+
+    const scriptTag = document.createElement('script');
+    scriptTag.src = jsonpUrl;
+    scriptTag.onerror = function() {
+        alert("Stockpile allocation sync pipeline timed out. The sheet did not confirm the edit.");
+        btn.disabled = false;
+        btn.innerText = "DISPATCH DATA";
+        if (window[callbackName]) delete window[callbackName];
+        if (scriptTag.parentNode) document.body.removeChild(scriptTag);
+    };
+    
+    document.body.appendChild(scriptTag);
 });
 
-// Banking System
+// --- ENGINE MODULE C: ADMINISTRATIVE REWARDS & AUTOMATED BANKING ---
 document.getElementById('adminBankForm').addEventListener('submit', function(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -101,7 +129,6 @@ document.getElementById('adminBankForm').addEventListener('submit', function(e) 
     btn.disabled = true;
     btn.innerText = "CALCULATING & RECORDING...";
 
-    // --- AUTOMATED IN-GAME MATH SYSTEM ---
     let finalGoldPayout = 0;
     let calculationLog = "";
 
@@ -158,7 +185,7 @@ document.getElementById('adminBankForm').addEventListener('submit', function(e) 
     document.body.appendChild(scriptTag);
 });
 
-// UI
+// --- UI RENDERING & TAB NAVIGATION ---
 function switchToTab(paneId) {
     document.querySelectorAll('.app-pane').forEach(p => p.style.display = "none");
     document.getElementById(paneId).style.display = "block";

@@ -92,7 +92,7 @@ document.getElementById('trackerForm').addEventListener('submit', function(e) {
             currentCachedWeapons[weapon] = qty;
             renderWeaponsGrid(currentCachedWeapons);
             
-            alert(`Verified! Your ${weapon} inventory count is now locked at ${Number(qty).toLocaleString()} inside the database.`);
+            alert(`Saved! Your ${weapon} inventory count is now saved at ${Number(qty).toLocaleString()} inside the database.`);
             document.getElementById('weaponSelect').value = "";
             document.getElementById('quantityInput').value = "";
         } else {

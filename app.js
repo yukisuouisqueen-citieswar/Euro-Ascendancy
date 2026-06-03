@@ -1,5 +1,5 @@
 // Paste your newest Google Web App URL right here:
-const MACRO_URL = "PASTE_YOUR_NEW_GOOGLE_WEB_APP_URL_HERE";
+const MACRO_URL = "https://script.google.com/macros/s/AKfycbwEzPyCWHKo1--h5EVPZJTkhq8akLQTehOe8jwK1U5GmEdf6eAAQHkEHabZzdnWOvM-/exec";
 
 let activeSessionUser = "";
 let currentCachedWeapons = {};

@@ -1,140 +1,200 @@
 :root {
-    --crimson: #6C1D2A;
-    --charcoal: #333334;
-    --white: #FFFFFF;
-    --cream: #FAD2AF;
+    --crimson: #8A2332;
     --wine: #421119;
-    --bg-dark: #1A1A1C;
+    --charcoal: #26262A;
+    --bg-dark: #141416;
+    --cream: #F2C9A0;
+    --white: #F5F3F0;
+    --muted: #8C8C96;
+    --good: #5FB56B;
+    --line: rgba(255,255,255,0.08);
 }
+
+* { box-sizing: border-box; }
 
 body {
     background-color: var(--bg-dark);
+    background-image: radial-gradient(circle at 50% 0%, rgba(138,35,50,0.12), transparent 60%);
     color: var(--white);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: 'Oswald', -apple-system, sans-serif;
     margin: 0;
-    padding: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     min-height: 100vh;
 }
 
-.alliance-banner {
+.banner {
     width: 100%;
     background: linear-gradient(135deg, var(--crimson) 0%, var(--wine) 100%);
-    border-bottom: 4px solid var(--charcoal);
-    padding: 35px 20px;
+    border-bottom: 3px solid var(--charcoal);
+    padding: 30px 20px 24px;
     text-align: center;
-    box-sizing: border-box;
 }
 
 .banner-title {
-    font-size: 2.2rem;
-    font-weight: 900;
-    letter-spacing: 4px;
-    color: var(--white);
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+    font-size: 1.9rem;
+    font-weight: 700;
+    letter-spacing: 5px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
 .banner-subtitle {
-    font-size: 0.85rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
     color: var(--cream);
-    letter-spacing: 2px;
-    margin-top: 8px;
-    font-weight: 600;
+    letter-spacing: 3px;
+    margin-top: 6px;
 }
 
-.main-content {
+.container {
     width: 100%;
-    max-width: 500px;
-    padding: 30px 15px;
-    box-sizing: border-box;
+    max-width: 460px;
+    margin: 36px 16px;
+    background: var(--charcoal);
+    border-left: 4px solid var(--crimson);
+    border-radius: 3px;
+    padding: 28px 24px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
 }
 
-.panel-section {
-    margin-bottom: 25px;
-}
-
-.intel-card {
-    background-color: var(--charcoal);
-    border-left: 5px solid var(--crimson);
-    padding: 25px;
-    border-radius: 4px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-}
-
-.header-card {
-    border-left-color: var(--cream);
-}
-
-h3 {
-    margin-top: 0;
-    font-size: 1.1rem;
-    letter-spacing: 1.5px;
+h2 {
+    margin: 0 0 22px;
+    font-size: 1.05rem;
+    letter-spacing: 2px;
     color: var(--cream);
     text-transform: uppercase;
-    margin-bottom: 15px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 12px;
 }
 
-.propaganda-text {
-    line-height: 1.6;
-    color: #E1E1E6;
-    font-size: 0.95rem;
-    font-style: italic;
-    margin: 0;
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
+.form-group { margin-bottom: 18px; }
 
 label {
     display: block;
-    font-size: 0.8rem;
-    color: #A8A8B3;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
     text-transform: uppercase;
-    margin-bottom: 8px;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
+    margin-bottom: 7px;
 }
 
 select, input {
     width: 100%;
-    padding: 12px;
-    background-color: #202022;
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 4px;
+    padding: 11px 12px;
+    background-color: #1D1D20;
+    border: 1px solid var(--line);
+    border-radius: 3px;
     color: var(--white);
+    font-family: 'Oswald', sans-serif;
     font-size: 0.95rem;
-    box-sizing: border-box;
 }
 
 select:focus, input:focus {
     outline: none;
     border-color: var(--crimson);
-    box-shadow: 0 0 5px rgba(108, 29, 42, 0.5);
+    box-shadow: 0 0 0 3px rgba(138,35,50,0.25);
 }
 
 .action-btn {
     width: 100%;
-    padding: 15px;
+    padding: 14px;
     background-color: var(--crimson);
-    border: 1px solid var(--wine);
-    border-radius: 4px;
+    border: none;
+    border-radius: 3px;
     color: var(--white);
-    font-size: 0.95rem;
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.9rem;
     font-weight: 700;
+    letter-spacing: 1.5px;
     cursor: pointer;
-    letter-spacing: 1px;
-    transition: background 0.2s ease;
-    margin-top: 10px;
+    margin-top: 6px;
+    transition: background 0.15s ease;
 }
 
-.action-btn:hover {
-    background-color: var(--wine);
+.action-btn:hover { background-color: var(--wine); }
+.action-btn:disabled { background-color: #4A4A4E; color: #999; cursor: not-allowed; }
+
+.hint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--cream);
+    min-height: 1em;
+    margin: -6px 0 12px;
 }
 
-.action-btn:disabled {
-    background-color: #4D4D4D;
-    color: #888;
-    cursor: not-allowed;
+.footnote {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin: 18px 0 0;
+    line-height: 1.5;
+}
+
+.stockpile-card {
+    background: var(--bg-dark);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 16px;
+    margin-bottom: 24px;
+}
+
+.section-label {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 1.5px;
+    color: var(--cream);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.weapons-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.weapon-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    background: rgba(255,255,255,0.02);
+    border-left: 2px solid var(--crimson);
+}
+
+.weapon-name {
+    font-size: 0.85rem;
+    color: var(--white);
+}
+
+.weapon-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--good);
+}
+
+.empty-note {
+    color: var(--muted);
+    text-align: center;
+    font-size: 0.85rem;
+    padding: 12px 0;
+}
+
+.logout-link {
+    display: block;
+    width: 100%;
+    margin-top: 22px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    text-decoration: underline;
+    text-align: center;
+    cursor: pointer;
 }

@@ -3,18 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Euro Ascendancy Panel</title>
+    <title>Euro Ascendancy — Stockpile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+    <div class="banner">
+        <div class="banner-title">EURO ASCENDANCY</div>
+        <div class="banner-subtitle">STOCKPILE REGISTRY</div>
+    </div>
+
     <div class="container" id="loginWrapper">
-        <h2>ALLIANCE PORTAL LOGIN</h2>
-        <form id="loginForm" onsubmit="event.preventDefault(); return false;">
+        <h2>ALLIANCE ACCESS</h2>
+        <form id="loginForm">
             <div class="form-group">
-                <label>Select Your Codename</label>
+                <label for="loginUser">Codename</label>
                 <select id="loginUser" required>
-                    <option value="">-- Identify Yourself --</option>
+                    <option value="">— select your name —</option>
                     <option value="kkoedb">kkoedb</option>
                     <option value="Ant Rose">Ant Rose</option>
                     <option value="The Notorious One">The Notorious One</option>
@@ -38,134 +45,67 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Access Key / Password</label>
-                <input type="password" id="loginPass" placeholder="••••••••" required>
+                <label for="loginPass">Password</label>
+                <input type="password" id="loginPass" placeholder="••••••••" required minlength="6">
             </div>
-            <button type="submit" id="loginBtn">ACCESS DATABASE</button>
+            <div class="form-group" id="confirmPasswordGroup" style="display:none;">
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" id="confirmPassword" placeholder="••••••••" minlength="6">
+            </div>
+            <p class="hint" id="loginHint"></p>
+            <button type="submit" id="loginBtn" class="action-btn">ACCESS DATABASE</button>
         </form>
+        <p class="footnote">First time logging in? Enter your name and choose any password — that becomes your account.</p>
     </div>
 
-    <div class="container" id="appWorkspace" style="display: none; max-width: 500px;">
+    <div class="container" id="appWorkspace" style="display: none;">
         <h2 id="workspaceTitle">COMMAND PORTAL</h2>
-        
-        <div style="display: flex; gap: 8px; margin-bottom: 25px;">
-            <button class="nav-toggle-btn" id="btnWeapons" onclick="switchToTab('weaponsPane')" style="flex: 1; padding: 12px 6px; background: #202022; border: 1px solid var(--crimson); color: white; cursor: pointer; font-weight: bold; font-size: 0.8rem; border-radius: 4px;">WEAPONS</button>
-            <button class="nav-toggle-btn" id="btnLedger" onclick="switchToTab('ledgerPane')" style="flex: 1; padding: 12px 6px; background: #202022; border: 1px solid transparent; color: #A8A8B3; cursor: pointer; font-weight: bold; font-size: 0.8rem; border-radius: 4px;">MY GOLD LOGS</button>
-            <button class="nav-toggle-btn" id="adminTabBtn" onclick="switchToTab('adminPane')" style="flex: 1; padding: 12px 6px; background: #202022; border: 1px solid transparent; color: #A8A8B3; cursor: pointer; font-weight: bold; font-size: 0.8rem; border-radius: 4px; display: none;">FINANCE DESK</button>
-        </div>
 
-        <div id="weaponsPane" class="app-pane">
-            <div style="margin-bottom: 25px; background: var(--bg-dark); padding: 15px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">
-                <label style="color: var(--cream); margin-bottom: 10px; font-weight: bold;">Your Live Stockpile Inventory</label>
-                <div id="liveWeaponsGrid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 180px; overflow-y: auto; font-size: 0.85rem; color: #E1E1E6; padding-right: 5px;">
-                    <p style="color: #A8A8B3; grid-column: span 2; text-align: center;">Loading inventory metrics...</p>
-                </div>
-            </div>
-
-            <form id="trackerForm" onsubmit="event.preventDefault(); return false;">
-                <div class="form-group">
-                    <label>Select Asset Type</label>
-                    <select id="weaponSelect" required>
-                        <option value="">-- Choose Weapon --</option>
-                        <option value="ICBM">ICBM</option>
-                        <option value="BRBM">BRBM</option>
-                        <option value="SRBM">SRBM</option>
-                        <option value="MRBM">MRBM</option>
-                        <option value="IRBM">IRBM</option>
-                        <option value="GHOST">GHOST</option>
-                        <option value="M240">M240</option>
-                        <option value="M16 Rifle">M16 Rifle</option>
-                        <option value="Frigate">Frigate</option>
-                        <option value="Submarine">Submarine</option>
-                        <option value="SPG-9">SPG-9</option>
-                        <option value="2S25">2S25</option>
-                        <option value="Destroyer">Destroyer</option>
-                        <option value="BM-21">BM-21</option>
-                        <option value="T-90MS">T-90MS</option>
-                        <option value="Abrams M1A2">Abrams M1A2</option>
-                        <option value="Merkava">Merkava</option>
-                        <option value="Striker 40">Striker 40</option>
-                        <option value="Patrol Boat">Patrol Boat</option>
-                        <option value="M41-DK1">M41-DK1</option>
-                        <option value="Cruiser">Cruiser</option>
-                        <option value="Challenger 2">Challenger 2</option>
-                        <option value="F-22 Raptor">F-22 Raptor</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Update Your Current Inventory Count</label>
-                    <input type="number" id="quantityInput" min="0" placeholder="e.g. 500" required>
-                </div>
-                <button type="submit" id="submitBtn">DISPATCH DATA</button>
-            </form>
-        </div>
-
-        <div id="ledgerPane" class="app-pane" style="display: none;">
-            <div style="background: var(--bg-dark); padding: 15px; border-radius: 4px; max-height: 300px; overflow-y: auto; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.1);" id="historyLogBox">
-                <p style="color: #A8A8B3; text-align: center;">No financial transactions found on record yet.</p>
+        <div class="stockpile-card">
+            <label class="section-label">Live Stockpile</label>
+            <div id="liveWeaponsGrid" class="weapons-grid">
+                <p class="empty-note">Loading...</p>
             </div>
         </div>
 
-        <div id="adminPane" class="app-pane" style="display: none;">
-            <h3 style="color: var(--cream); border-bottom: 1px solid var(--crimson); padding-bottom: 5px; font-size: 1rem; margin-bottom: 15px;">ALLIANCE SCOREBOARD MANAGEMENT</h3>
-            
-            <form id="adminBankForm" onsubmit="event.preventDefault(); return false;">
-                <div class="form-group">
-                    <label>Target Player</label>
-                    <select id="adminTargetUser" required>
-                        <option value="">-- Choose Account --</option>
-                        <option value="kkoedb">kkoedb</option>
-                        <option value="Ant Rose">Ant Rose</option>
-                        <option value="The Notorious One">The Notorious One</option>
-                        <option value="lowly poly">lowly poly</option>
-                        <option value="pioneer9">pioneer9</option>
-                        <option value="Icyz">Icyz</option>
-                        <option value="vipeR.">vipeR.</option>
-                        <option value="TheOrthodoxone">TheOrthodoxone</option>
-                        <option value="Da0Y Khan">Da0Y Khan</option>
-                        <option value="AlbertRivera">AlbertRivera</option>
-                        <option value="Al Capone">Al Capone</option>
-                        <option value="ReedyTurnip">ReedyTurnip</option>
-                        <option value="kalikaka">kalikaka</option>
-                        <option value="JohnCox93">JohnCox93</option>
-                        <option value="WonderfulWand">WonderfulWand</option>
-                        <option value="Stonehatch">Stonehatch</option>
-                        <option value="Konan">Konan</option>
-                        <option value="Rhysand">Rhysand</option>
-                        <option value="Yuki Suou">Yuki Suou</option>
-                        <option value="Gaby0">Gaby0</option>
-                    </select>
-                </div>
+        <form id="trackerForm">
+            <div class="form-group">
+                <label for="weaponSelect">Weapon</label>
+                <select id="weaponSelect" required>
+                    <option value="">— choose weapon —</option>
+                    <option value="ICBM">ICBM</option>
+                    <option value="BRBM">BRBM</option>
+                    <option value="SRBM">SRBM</option>
+                    <option value="MRBM">MRBM</option>
+                    <option value="IRBM">IRBM</option>
+                    <option value="GHOST">GHOST</option>
+                    <option value="M240">M240</option>
+                    <option value="M16 Rifle">M16 Rifle</option>
+                    <option value="Frigate">Frigate</option>
+                    <option value="Submarine">Submarine</option>
+                    <option value="SPG-9">SPG-9</option>
+                    <option value="2S25">2S25</option>
+                    <option value="Destroyer">Destroyer</option>
+                    <option value="BM-21">BM-21</option>
+                    <option value="T-90MS">T-90MS</option>
+                    <option value="Abrams M1A2">Abrams M1A2</option>
+                    <option value="Merkava">Merkava</option>
+                    <option value="Striker 40">Striker 40</option>
+                    <option value="Patrol Boat">Patrol Boat</option>
+                    <option value="M41-DK1">M41-DK1</option>
+                    <option value="Cruiser">Cruiser</option>
+                    <option value="Challenger 2">Challenger 2</option>
+                    <option value="F-22 Raptor">F-22 Raptor</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="quantityInput">Current Count</label>
+                <input type="number" id="quantityInput" min="0" placeholder="e.g. 500" required>
+            </div>
+            <button type="submit" id="submitBtn" class="action-btn">SAVE COUNT</button>
+        </form>
 
-                <div class="form-group">
-                    <label>Activity / Reward Type</label>
-                    <select id="adminTransactionType" required>
-                        <option value="">-- Choose Activity --</option>
-                        <option value="Border Day">Border Daily Allowance (+10k per day)</option>
-                        <option value="Border Defense">Border Attack Medals (+10k per 10 medals)</option>
-                        <option value="Regional Points">Regional Points (Points x 300 Gold)</option>
-                        <option value="Regional Defense">Regional Medals Gained (+10k per 10 medals)</option>
-                        <option value="Disruption Medals">Disruption Medals (+12k per 10 medals)</option>
-                        <option value="Interest Payout">Bank Interest Payout (Max 250k)</option>
-                        <option value="Manual Adjustment">Manual Adjustment / Expense (-/+)</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Value / Count (Input points, days, or medals based on type)</label>
-                    <input type="number" id="adminGoldAmount" placeholder="e.g. 1000" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Match / Achievement Reference Notes</label>
-                    <input type="text" id="adminLogNotes" placeholder="e.g. Regional Round 2 performance" required>
-                </div>
-
-                <button type="submit" id="adminBankBtn" style="background: var(--crimson); color: white; font-weight: bold;">LOG GAME REWARD</button>
-            </form>
-        </div>
-
-        <button onclick="logout()" style="margin-top: 30px; background: none; border: none; color: #A8A8B3; text-decoration: underline; width: 100%; text-align: center; cursor: pointer; font-size: 0.8rem;">Securely Clear & Sign Out</button>
+        <button onclick="logout()" class="logout-link">Sign out</button>
     </div>
 
     <script src="app.js"></script>

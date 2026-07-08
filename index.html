@@ -3,110 +3,330 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Euro Ascendancy — Stockpile</title>
+    <title>Euro Ascendancy</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="banner">
-        <div class="banner-title">EURO ASCENDANCY</div>
-        <div class="banner-subtitle">STOCKPILE REGISTRY</div>
-    </div>
+    <nav class="topnav">
+        <div class="brand">EURO <span>ASCENDANCY</span></div>
+        <div class="navlinks" id="navLinks" style="display:none;">
+            <button class="navlink active" data-pane="stockpilePane">STOCKPILE</button>
+            <button class="navlink" data-pane="bankPane">BANK</button>
+            <button class="navlink" data-pane="historyPane">HISTORY</button>
+            <button class="navlink" data-pane="adminPane" id="adminNavLink" style="display:none;">ADMIN</button>
+            <button class="navlink signout" onclick="logout()">SIGN OUT</button>
+        </div>
+    </nav>
 
-    <div class="container" id="loginWrapper">
-        <h2>ALLIANCE ACCESS</h2>
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="loginUser">Codename</label>
-                <select id="loginUser" required>
-                    <option value="">— select your name —</option>
-                    <option value="kkoedb">kkoedb</option>
-                    <option value="Ant Rose">Ant Rose</option>
-                    <option value="The Notorious One">The Notorious One</option>
-                    <option value="lowly poly">lowly poly</option>
-                    <option value="pioneer9">pioneer9</option>
-                    <option value="Icyz">Icyz</option>
-                    <option value="vipeR.">vipeR.</option>
-                    <option value="TheOrthodoxone">TheOrthodoxone</option>
-                    <option value="Da0Y Khan">Da0Y Khan</option>
-                    <option value="AlbertRivera">AlbertRivera</option>
-                    <option value="Al Capone">Al Capone</option>
-                    <option value="ReedyTurnip">ReedyTurnip</option>
-                    <option value="kalikaka">kalikaka</option>
-                    <option value="JohnCox93">JohnCox93</option>
-                    <option value="WonderfulWand">WonderfulWand</option>
-                    <option value="Stonehatch">Stonehatch</option>
-                    <option value="Konan">Konan</option>
-                    <option value="Rhysand">Rhysand</option>
-                    <option value="Yuki Suou">Yuki Suou</option>
-                    <option value="Gaby0">Gaby0</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="loginPass">Password</label>
-                <input type="password" id="loginPass" placeholder="••••••••" required minlength="6">
-            </div>
-            <div class="form-group" id="confirmPasswordGroup" style="display:none;">
-                <label for="confirmPassword">Confirm Password</label>
-                <input type="password" id="confirmPassword" placeholder="••••••••" minlength="6">
-            </div>
-            <p class="hint" id="loginHint"></p>
-            <button type="submit" id="loginBtn" class="action-btn">ACCESS DATABASE</button>
-        </form>
-        <p class="footnote">First time logging in? Enter your name and choose any password — that becomes your account.</p>
-    </div>
+    <!-- Mobile bottom tab bar -->
+    <nav class="mobile-tabbar" id="mobileTabbar" style="display:none;">
+        <button class="tab-item active" data-pane="stockpilePane">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            <span>Stockpile</span>
+        </button>
+        <button class="tab-item" data-pane="bankPane">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M6 12h12"/></svg>
+            <span>Bank</span>
+        </button>
+        <button class="tab-item" data-pane="historyPane">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>History</span>
+        </button>
+        <button class="tab-item" data-pane="adminPane" id="mobileAdminTab" style="display:none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span>Admin</span>
+        </button>
+        <button class="tab-item" onclick="logout()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span>Sign Out</span>
+        </button>
+    </nav>
 
-    <div class="container" id="appWorkspace" style="display: none;">
-        <h2 id="workspaceTitle">COMMAND PORTAL</h2>
-
-        <div class="stockpile-card">
-            <label class="section-label">Live Stockpile</label>
-            <div id="liveWeaponsGrid" class="weapons-grid">
-                <p class="empty-note">Loading...</p>
+    <!-- ===== LANDING ===== -->
+    <section class="landing" id="landing">
+        <div class="landing-overlay"></div>
+        <div class="landing-content">
+            <h1>EURO<br>ASCENDANCY</h1>
+            <p class="landing-sub">ALLIANCE COMMAND PORTAL</p>
+            <div class="btn-row landing-btns">
+                <button class="btn btn-primary" onclick="showLogin()">ENTER PORTAL</button>
+                <button class="btn btn-outline" onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})">ABOUT</button>
             </div>
         </div>
+    </section>
 
-        <form id="trackerForm">
-            <div class="form-group">
-                <label for="weaponSelect">Weapon</label>
-                <select id="weaponSelect" required>
-                    <option value="">— choose weapon —</option>
-                    <option value="ICBM">ICBM</option>
-                    <option value="BRBM">BRBM</option>
-                    <option value="SRBM">SRBM</option>
-                    <option value="MRBM">MRBM</option>
-                    <option value="IRBM">IRBM</option>
-                    <option value="GHOST">GHOST</option>
-                    <option value="M240">M240</option>
-                    <option value="M16 Rifle">M16 Rifle</option>
-                    <option value="Frigate">Frigate</option>
-                    <option value="Submarine">Submarine</option>
-                    <option value="SPG-9">SPG-9</option>
-                    <option value="2S25">2S25</option>
-                    <option value="Destroyer">Destroyer</option>
-                    <option value="BM-21">BM-21</option>
-                    <option value="T-90MS">T-90MS</option>
-                    <option value="Abrams M1A2">Abrams M1A2</option>
-                    <option value="Merkava">Merkava</option>
-                    <option value="Striker 40">Striker 40</option>
-                    <option value="Patrol Boat">Patrol Boat</option>
-                    <option value="M41-DK1">M41-DK1</option>
-                    <option value="Cruiser">Cruiser</option>
-                    <option value="Challenger 2">Challenger 2</option>
-                    <option value="F-22 Raptor">F-22 Raptor</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="quantityInput">Current Count</label>
-                <input type="number" id="quantityInput" min="0" placeholder="e.g. 500" required>
-            </div>
-            <button type="submit" id="submitBtn" class="action-btn">SAVE COUNT</button>
-        </form>
+    <section class="about" id="about">
+        <div class="about-inner">
+            <h2>Stockpile. Treasury.</h2>
+            <p>Track your weapon stockpile, claim gold for troop losses and border days, transfer to fellow members, and see your full transaction history.</p>
+            <button class="btn btn-primary" onclick="showLogin()">ENTER PORTAL</button>
+        </div>
+    </section>
 
-        <button onclick="logout()" class="logout-link">Sign out</button>
-    </div>
+    <!-- ===== LOGIN GATE ===== -->
+    <section class="hero" id="loginWrapper" style="display:none;">
+        <div class="hero-inner">
+            <h1>ALLIANCE<br>COMMAND</h1>
+            <p class="hero-sub">Stockpile &amp; treasury access</p>
+
+            <form id="loginForm" class="login-card">
+                <div class="form-group">
+                    <label for="loginUser">Username</label>
+                    <select id="loginUser" required>
+                        <option value="">— select your name —</option>
+                        <option value="kkoedb">kkoedb</option>
+                        <option value="Ant Rose">Ant Rose</option>
+                        <option value="The Notorious One">The Notorious One</option>
+                        <option value="lowly poly">lowly poly</option>
+                        <option value="pioneer9">pioneer9</option>
+                        <option value="Icyz">Icyz</option>
+                        <option value="vipeR.">vipeR.</option>
+                        <option value="TheOrthodoxone">TheOrthodoxone</option>
+                        <option value="Da0Y Khan">Da0Y Khan</option>
+                        <option value="AlbertRivera">AlbertRivera</option>
+                        <option value="Al Capone">Al Capone</option>
+                        <option value="ReedyTurnip">ReedyTurnip</option>
+                        <option value="kalikaka">kalikaka</option>
+                        <option value="JohnCox93">JohnCox93</option>
+                        <option value="WonderfulWand">WonderfulWand</option>
+                        <option value="Stonehatch">Stonehatch</option>
+                        <option value="Konan">Konan</option>
+                        <option value="Rhysand">Rhysand</option>
+                        <option value="Yuki Suou">Yuki Suou</option>
+                        <option value="Gaby0">Gaby0</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="loginPass">Password</label>
+                    <input type="password" id="loginPass" placeholder="••••••••" required minlength="6">
+                </div>
+                <div class="form-group" id="confirmPasswordGroup" style="display:none;">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" placeholder="••••••••" minlength="6">
+                </div>
+                <p class="hint" id="loginHint"></p>
+                <div class="btn-row">
+                    <button type="submit" id="loginBtn" class="btn btn-primary">ACCESS DATABASE</button>
+                </div>
+            </form>
+            <p class="footnote">First time? Enter your name and any password — that becomes your account.</p>
+        </div>
+    </section>
+
+    <!-- ===== WORKSPACE ===== -->
+    <main id="appWorkspace" style="display:none;">
+
+        <section class="pane" id="stockpilePane">
+            <h2>Stockpile</h2>
+            <div class="card">
+                <span class="card-label">Live Inventory</span>
+                <div id="liveWeaponsGrid" class="weapons-grid">
+                    <p class="empty-note">Loading...</p>
+                </div>
+            </div>
+            <div class="card">
+                <span class="card-label">Update a Count</span>
+                <form id="trackerForm">
+                    <div class="form-group">
+                        <label for="weaponSelect">Weapon</label>
+                        <select id="weaponSelect" required>
+                            <option value="">— choose weapon —</option>
+                            <option value="ICBM">ICBM</option>
+                            <option value="BRBM">BRBM</option>
+                            <option value="SRBM">SRBM</option>
+                            <option value="MRBM">MRBM</option>
+                            <option value="IRBM">IRBM</option>
+                            <option value="GHOST">GHOST</option>
+                            <option value="M240">M240</option>
+                            <option value="M16 Rifle">M16 Rifle</option>
+                            <option value="Frigate">Frigate</option>
+                            <option value="Submarine">Submarine</option>
+                            <option value="SPG-9">SPG-9</option>
+                            <option value="2S25">2S25</option>
+                            <option value="Destroyer">Destroyer</option>
+                            <option value="BM-21">BM-21</option>
+                            <option value="T-90MS">T-90MS</option>
+                            <option value="Abrams M1A2">Abrams M1A2</option>
+                            <option value="Merkava">Merkava</option>
+                            <option value="Striker 40">Striker 40</option>
+                            <option value="Patrol Boat">Patrol Boat</option>
+                            <option value="M41-DK1">M41-DK1</option>
+                            <option value="Cruiser">Cruiser</option>
+                            <option value="Challenger 2">Challenger 2</option>
+                            <option value="F-22 Raptor">F-22 Raptor</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="quantityInput">Current Count</label>
+                        <input type="number" id="quantityInput" min="0" placeholder="e.g. 500" required>
+                    </div>
+                    <button type="submit" id="submitBtn" class="btn btn-primary">SAVE COUNT</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="pane" id="bankPane" style="display:none;">
+            <h2>Bank</h2>
+
+            <div class="card balance-card">
+                <span class="card-label">Balance</span>
+                <div class="balance-amount" id="balanceAmount">—</div>
+            </div>
+
+            <div class="card">
+                <span class="card-label">Claim Payout</span>
+                <form id="claimForm">
+                    <div class="form-group">
+                        <label for="claimType">Type</label>
+                        <select id="claimType" required>
+                            <option value="troops">Troop Loss Refund — 30g each</option>
+                            <option value="regional">Regional Medals — 750g each</option>
+                            <option value="borderday">Border Days — 10,000g each</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="claimAmount">Amount</label>
+                        <input type="number" id="claimAmount" min="1" placeholder="e.g. 10" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="claimNotes">Notes (optional)</label>
+                        <input type="text" id="claimNotes" placeholder="e.g. attacked by X">
+                    </div>
+                    <button type="submit" id="claimBtn" class="btn btn-primary">CLAIM</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <span class="card-label">Transfer Gold</span>
+                <form id="transferForm">
+                    <div class="form-group">
+                        <label for="transferTo">Send To</label>
+                        <select id="transferTo" required>
+                            <option value="">— choose recipient —</option>
+                            <option value="kkoedb">kkoedb</option>
+                            <option value="Ant Rose">Ant Rose</option>
+                            <option value="The Notorious One">The Notorious One</option>
+                            <option value="lowly poly">lowly poly</option>
+                            <option value="pioneer9">pioneer9</option>
+                            <option value="Icyz">Icyz</option>
+                            <option value="vipeR.">vipeR.</option>
+                            <option value="TheOrthodoxone">TheOrthodoxone</option>
+                            <option value="Da0Y Khan">Da0Y Khan</option>
+                            <option value="AlbertRivera">AlbertRivera</option>
+                            <option value="Al Capone">Al Capone</option>
+                            <option value="ReedyTurnip">ReedyTurnip</option>
+                            <option value="kalikaka">kalikaka</option>
+                            <option value="JohnCox93">JohnCox93</option>
+                            <option value="WonderfulWand">WonderfulWand</option>
+                            <option value="Stonehatch">Stonehatch</option>
+                            <option value="Konan">Konan</option>
+                            <option value="Rhysand">Rhysand</option>
+                            <option value="Yuki Suou">Yuki Suou</option>
+                            <option value="Gaby0">Gaby0</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="transferAmount">Amount</label>
+                        <input type="number" id="transferAmount" min="1" placeholder="e.g. 5000" required>
+                    </div>
+                    <button type="submit" id="transferBtn" class="btn btn-outline">SEND</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="pane" id="historyPane" style="display:none;">
+            <h2>History</h2>
+            <div class="card">
+                <div id="historyList"><p class="empty-note">Loading...</p></div>
+            </div>
+        </section>
+
+        <section class="pane" id="adminPane" style="display:none;">
+            <h2>Admin</h2>
+            <div class="card">
+                <span class="card-label">Disable / Re-enable Account</span>
+                <form id="adminForm">
+                    <div class="form-group">
+                        <label for="adminTargetUser">Player</label>
+                        <select id="adminTargetUser" required>
+                            <option value="">— choose account —</option>
+                            <option value="kkoedb">kkoedb</option>
+                            <option value="Ant Rose">Ant Rose</option>
+                            <option value="The Notorious One">The Notorious One</option>
+                            <option value="lowly poly">lowly poly</option>
+                            <option value="pioneer9">pioneer9</option>
+                            <option value="Icyz">Icyz</option>
+                            <option value="vipeR.">vipeR.</option>
+                            <option value="TheOrthodoxone">TheOrthodoxone</option>
+                            <option value="Da0Y Khan">Da0Y Khan</option>
+                            <option value="AlbertRivera">AlbertRivera</option>
+                            <option value="Al Capone">Al Capone</option>
+                            <option value="ReedyTurnip">ReedyTurnip</option>
+                            <option value="kalikaka">kalikaka</option>
+                            <option value="JohnCox93">JohnCox93</option>
+                            <option value="WonderfulWand">WonderfulWand</option>
+                            <option value="Stonehatch">Stonehatch</option>
+                            <option value="Konan">Konan</option>
+                            <option value="Rhysand">Rhysand</option>
+                            <option value="Yuki Suou">Yuki Suou</option>
+                            <option value="Gaby0">Gaby0</option>
+                        </select>
+                    </div>
+                    <div class="btn-row">
+                        <button type="submit" data-mode="disable" class="btn btn-primary">DISABLE</button>
+                        <button type="submit" data-mode="enable" class="btn btn-outline">RE-ENABLE</button>
+                    </div>
+                </form>
+                <p class="hint" id="adminHint"></p>
+            </div>
+
+            <div class="card">
+                <span class="card-label">Manual Gold Override</span>
+                <form id="overrideForm">
+                    <div class="form-group">
+                        <label for="overrideTargetUser">Player</label>
+                        <select id="overrideTargetUser" required>
+                            <option value="">— choose account —</option>
+                            <option value="kkoedb">kkoedb</option>
+                            <option value="Ant Rose">Ant Rose</option>
+                            <option value="The Notorious One">The Notorious One</option>
+                            <option value="lowly poly">lowly poly</option>
+                            <option value="pioneer9">pioneer9</option>
+                            <option value="Icyz">Icyz</option>
+                            <option value="vipeR.">vipeR.</option>
+                            <option value="TheOrthodoxone">TheOrthodoxone</option>
+                            <option value="Da0Y Khan">Da0Y Khan</option>
+                            <option value="AlbertRivera">AlbertRivera</option>
+                            <option value="Al Capone">Al Capone</option>
+                            <option value="ReedyTurnip">ReedyTurnip</option>
+                            <option value="kalikaka">kalikaka</option>
+                            <option value="JohnCox93">JohnCox93</option>
+                            <option value="WonderfulWand">WonderfulWand</option>
+                            <option value="Stonehatch">Stonehatch</option>
+                            <option value="Konan">Konan</option>
+                            <option value="Rhysand">Rhysand</option>
+                            <option value="Yuki Suou">Yuki Suou</option>
+                            <option value="Gaby0">Gaby0</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="overrideAmount">Amount (negative to deduct)</label>
+                        <input type="number" id="overrideAmount" placeholder="e.g. -5000 or 5000" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="overrideNotes">Reason</label>
+                        <input type="text" id="overrideNotes" placeholder="e.g. correcting duplicate claim">
+                    </div>
+                    <button type="submit" id="overrideBtn" class="btn btn-primary">APPLY</button>
+                </form>
+                <p class="hint" id="overrideHint"></p>
+            </div>
+        </section>
+
+    </main>
 
     <script src="app.js"></script>
 </body>

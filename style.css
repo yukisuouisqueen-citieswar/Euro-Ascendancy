@@ -343,6 +343,90 @@ main { max-width: 560px; margin: 0 auto; padding: 32px 20px 60px; }
 
 .empty-note { color: var(--gray); text-align: center; font-size: 0.85rem; padding: 10px 0; }
 
+/* ---------- File Upload ---------- */
+
+.file-upload-container { margin-top: 8px; }
+
+.file-upload-area {
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    padding: 32px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(196,41,58,0.02);
+}
+
+.file-upload-area:hover {
+    border-color: var(--crimson);
+    background: rgba(196,41,58,0.06);
+}
+
+.file-upload-area.dragover {
+    border-color: var(--crimson);
+    background: rgba(196,41,58,0.1);
+}
+
+.file-upload-area svg {
+    margin-bottom: 12px;
+    opacity: 0.6;
+}
+
+.upload-text {
+    font-size: 0.92rem;
+    color: var(--white);
+    margin: 8px 0 4px;
+}
+
+.upload-link {
+    color: var(--crimson);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.upload-hint {
+    font-size: 0.78rem;
+    color: var(--gray);
+    margin: 0;
+}
+
+.file-preview {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    background: rgba(79,191,103,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.file-name {
+    font-size: 0.88rem;
+    color: var(--good);
+    margin: 0;
+    word-break: break-all;
+    flex: 1;
+}
+
+.btn-remove {
+    background: transparent;
+    border: 1px solid var(--bad);
+    color: var(--bad);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    margin-left: 12px;
+    transition: all 0.2s;
+}
+
+.btn-remove:hover {
+    background: var(--bad);
+    color: white;
+}
+
 /* ---------- History ---------- */
 
 .ledger-row {

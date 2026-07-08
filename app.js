@@ -8,6 +8,7 @@ let activeSessionPassword = ""; // memory only, never stored
 let currentCachedWeapons = {};
 let claimMode = false;
 let isLoggedIn = false;
+let selectedFile = null;
 
 function updateNavLayout() {
   const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
@@ -309,6 +310,127 @@ document
     );
   });
 
+// ---------------- Claims ----------------
+
+function setupFileUpload() {
+  const fileInput = document.getElementById("battleReportUpload");
+  const fileUploadArea = document.getElementById("fileUploadArea");
+  const fileUploadContainer = document.getElementById("fileUploadContainer");
+  const filePreview = document.getElementById("filePreview");
+  const fileName = document.getElementById("fileName");
+
+  // Click to browse
+  fileUploadArea.addEventListener("click", () => fileInput.click());
+  fileUploadArea.addEventListener("click", (e) => {
+    if (e.target.classList.contains("upload-link")) {
+      fileInput.click();
+    }
+  });
+
+  // File input change
+  fileInput.addEventListener("change", (e) => {
+    if (e.target.files.length > 0) {
+      selectedFile = e.target.files[0];
+      displayFilePreview(selectedFile.name);
+    }
+  });
+
+  // Drag and drop
+  fileUploadArea.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    fileUploadArea.classList.add("dragover");
+  });
+
+  fileUploadArea.addEventListener("dragleave", () => {
+    fileUploadArea.classList.remove("dragover");
+  });
+
+  fileUploadArea.addEventListener("drop", (e) => {
+    e.preventDefault();
+    fileUploadArea.classList.remove("dragover");
+    if (e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      if (file.type.startsWith("image/")) {
+        selectedFile = file;
+        fileInput.files = e.dataTransfer.files;
+        displayFilePreview(file.name);
+      } else {
+        alert("Please drop an image file (PNG, JPG, GIF).");
+      }
+    }
+  });
+
+  function displayFilePreview(name) {
+    fileUploadArea.style.display = "none";
+    filePreview.style.display = "flex";
+    fileName.textContent = name;
+  }
+}
+
+function clearFileUpload() {
+  selectedFile = null;
+  document.getElementById("battleReportUpload").value = "";
+  document.getElementById("fileUploadArea").style.display = "block";
+  document.getElementById("filePreview").style.display = "none";
+}
+
+document.getElementById("claimsForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+  const btn = document.getElementById("claimsSubmitBtn");
+  const claimTypeSelect = document.getElementById("claimTypeSelect").value;
+  const troopsLost = document.getElementById("troopsLostInput").value;
+  const hint = document.getElementById("claimsHint");
+
+  if (!claimTypeSelect || !troopsLost) {
+    hint.textContent = "Please fill out all fields.";
+    hint.style.color = "var(--bad)";
+    return;
+  }
+
+  if (!selectedFile) {
+    hint.textContent = "Please upload a battle report screenshot.";
+    hint.style.color = "var(--bad)";
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "SUBMITTING...";
+  hint.textContent = "";
+
+  // Placeholder for now - will be connected to Apps Script
+  jsonpRequest(
+    {
+      action: "submitClaim",
+      player: activeSessionUser,
+      password: activeSessionPassword,
+      claimType: claimTypeSelect,
+      troops: troopsLost,
+    },
+    function (data) {
+      btn.disabled = false;
+      btn.textContent = "SUBMIT CLAIM";
+      if (data.status === "success") {
+        hint.textContent = `Claim #${data.claimId} submitted successfully!`;
+        hint.style.color = "var(--good)";
+        document.getElementById("claimsForm").reset();
+        clearFileUpload();
+      } else {
+        hint.textContent = data.message || "Couldn't submit claim.";
+        hint.style.color = "var(--bad)";
+      }
+    },
+    function () {
+      btn.disabled = false;
+      btn.textContent = "SUBMIT CLAIM";
+      hint.textContent = "Network error — try again.";
+      hint.style.color = "var(--bad)";
+    },
+  );
+});
+
+// Initialize file upload on page load
+setupFileUpload();
+
 // ---------------- History ----------------
 
 function loadHistory() {
@@ -442,4 +564,5 @@ function logout() {
   document.getElementById("appWorkspace").style.display = "none";
   document.getElementById("loginWrapper").style.display = "flex";
   loginForm.reset();
+  clearFileUpload();
 }

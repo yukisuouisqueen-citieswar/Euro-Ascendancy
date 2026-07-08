@@ -15,6 +15,7 @@
         <div class="navlinks" id="navLinks" style="display:none;">
             <button class="navlink active" data-pane="stockpilePane">STOCKPILE</button>
             <button class="navlink" data-pane="bankPane">BANK</button>
+            <button class="navlink" data-pane="claimsPane">CLAIMS</button>
             <button class="navlink" data-pane="historyPane">HISTORY</button>
             <button class="navlink" data-pane="adminPane" id="adminNavLink" style="display:none;">ADMIN</button>
             <button class="navlink signout" onclick="logout()">SIGN OUT</button>
@@ -30,6 +31,10 @@
         <button class="tab-item" data-pane="bankPane">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M6 12h12"/></svg>
             <span>Bank</span>
+        </button>
+        <button class="tab-item" data-pane="claimsPane">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>Claims</span>
         </button>
         <button class="tab-item" data-pane="historyPane">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -234,6 +239,45 @@
                     </div>
                     <button type="submit" id="transferBtn" class="btn btn-outline">SEND</button>
                 </form>
+            </div>
+        </section>
+
+        <section class="pane" id="claimsPane" style="display:none;">
+            <h2>Claims</h2>
+            <div class="card">
+                <span class="card-label">Submit a Claim</span>
+                <form id="claimsForm">
+                    <div class="form-group">
+                        <label for="claimTypeSelect">Claim Type</label>
+                        <select id="claimTypeSelect" required>
+                            <option value="">— choose type —</option>
+                            <option value="troops">Troop Loss</option>
+                            <option value="regional">Regional</option>
+                            <option value="borderday">Border Day</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="troopsLostInput">Troops Lost</label>
+                        <input type="number" id="troopsLostInput" min="0" placeholder="e.g. 150" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="battleReportUpload">Battle Report</label>
+                        <div class="file-upload-container" id="fileUploadContainer">
+                            <input type="file" id="battleReportUpload" accept="image/*" style="display:none;">
+                            <div class="file-upload-area" id="fileUploadArea">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="32" height="32"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                <p class="upload-text">Drag your screenshot here or <span class="upload-link">click to browse</span></p>
+                                <p class="upload-hint">PNG, JPG, or GIF (max 10MB)</p>
+                            </div>
+                            <div class="file-preview" id="filePreview" style="display:none;">
+                                <p class="file-name" id="fileName"></p>
+                                <button type="button" class="btn-remove" onclick="clearFileUpload()">Remove</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" id="claimsSubmitBtn" class="btn btn-primary">SUBMIT CLAIM</button>
+                </form>
+                <p class="hint" id="claimsHint"></p>
             </div>
         </section>
 

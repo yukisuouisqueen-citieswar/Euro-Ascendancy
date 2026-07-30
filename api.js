@@ -1,239 +1,64 @@
 /**
- * ==========================================================
  * api.js
- * Sole communication layer between GitHub Pages and Apps Script
- * ==========================================================
+ * API communication layer connecting to your Google Apps Script Backend.gs
  */
 
-const MACRO_URL =
-  "https://script.google.com/macros/s/AKfycbwkRTvWrleQBu-sZKC0UylR0C_HigPNAcxkqnH97pk7N2kL5n5RsrhVl2BIjEimmRSQ/exec";
+const SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
 
-const API = (() => {
+const API = {
+  async request(params) {
+    const url = new URL(SCRIPT_URL);
+    Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
 
-    function request(params = {}) {
+    const response = await fetch(url.toString(), {
+      method: "GET",
+      mode: "cors"
+    });
 
-        return new Promise((resolve, reject) => {
-
-            const callback =
-                "jsonp_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
-
-            const script = document.createElement("script");
-
-            window[callback] = function (response) {
-                cleanup();
-                resolve(response);
-            };
-
-            script.onerror = function () {
-                cleanup();
-                reject(new Error("Unable to reach the server."));
-            };
-
-            function cleanup() {
-                delete window[callback];
-
-                if (script.parentNode)
-                    script.parentNode.removeChild(script);
-            }
-
-            const query = new URLSearchParams({
-                ...params,
-                callback
-            });
-
-            script.src = `${MACRO_URL}?${query.toString()}`;
-
-            document.body.appendChild(script);
-
-        });
-
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    /**
-     * Automatically attach logged in credentials.
-     */
-    function authenticated(params = {}) {
+    return await response.json();
+  },
 
-        return request({
-            ...params,
-            player: AppState.user,
-            password: AppState.password
-        });
+  async login(player, password) {
+    return this.request({ action: "login", player, password });
+  },
 
-    }
+  async claimAccount(player, newPassword) {
+    return this.request({ action: "claimAccount", player, newPassword });
+  },
 
-    /* ==========================================
-       AUTH
-    ========================================== */
+  async getStockpile(player, password) {
+    return this.request({ action: "getWeapons", player, password });
+  },
 
-    function login(username, password) {
+  async updateWeapon(player, password, weapon, quantity) {
+    return this.request({ action: "updateWeapon", player, password, weapon, quantity });
+  },
 
-        return request({
-            action: "login",
-            player: username,
-            password
-        });
+  async getBank(player, password) {
+    return this.request({ action: "getBank", player, password });
+  },
 
-    }
+  async getTransactions(player, password) {
+    return this.request({ action: "getTransactions", player, password });
+  },
 
-    function claimAccount(username, password) {
+  async transfer(player, password, toPlayer, amount) {
+    return this.request({ action: "transfer", player, password, toPlayer, amount });
+  },
 
-        return request({
-            action: "claim",
-            player: username,
-            newPassword: password
-        });
+  async submitClaim(player, password, claimType, amount, notes) {
+    return this.request({ action: "submitClaim", player, password, claimType, amount, notes });
+  },
 
-    }
+  async adminSetDisabled(player, password, targetPlayer, action) {
+    return this.request({ action: "adminSetDisabled", player, password, targetPlayer, disabledAction: action });
+  },
 
-    function changePassword(currentPassword, newPassword) {
-
-        return authenticated({
-            action: "changePassword",
-            currentPassword,
-            newPassword
-        });
-
-    }
-
-    /* ==========================================
-       STOCKPILE
-    ========================================== */
-
-    function updateWeapon(weapon, quantity) {
-
-        return authenticated({
-            action: "weapon",
-            weapon,
-            quantity
-        });
-
-    }
-
-    /* ==========================================
-       BANK
-    ========================================== */
-
-    function transfer(toPlayer, amount) {
-
-        return authenticated({
-            action: "transfer",
-            toPlayer,
-            amount
-        });
-
-    }
-
-    function troopClaim(amount, notes = "") {
-
-        return authenticated({
-            action: "claimTroops",
-            amount,
-            notes
-        });
-
-    }
-
-    function regionalClaim(medals, notes = "") {
-
-        return authenticated({
-            action: "claimRegional",
-            medals,
-            notes
-        });
-
-    }
-
-    function borderClaim(days, notes = "") {
-
-        return authenticated({
-            action: "claimBorderDay",
-            days,
-            notes
-        });
-
-    }
-
-    function getLedger() {
-
-        return authenticated({
-            action: "ledger"
-        });
-
-    }
-
-    /* ==========================================
-       CLAIMS
-    ========================================== */
-
-    function submitClaim(claimType, troops, image = "") {
-
-        return authenticated({
-            action: "submitClaim",
-            claimType,
-            troops,
-            image
-        });
-
-    }
-
-    /* ==========================================
-       ADMIN
-    ========================================== */
-
-    function disableAccount(targetPlayer) {
-
-        return authenticated({
-            action: "disableAccount",
-            targetPlayer
-        });
-
-    }
-
-    function enableAccount(targetPlayer) {
-
-        return authenticated({
-            action: "enableAccount",
-            targetPlayer
-        });
-
-    }
-
-    function adjustBalance(targetPlayer, amount, notes = "") {
-
-        return authenticated({
-            action: "adminAdjust",
-            targetPlayer,
-            amount,
-            notes
-        });
-
-    }
-
-    /* ==========================================
-       PUBLIC API
-    ========================================== */
-
-    return {
-
-        login,
-        claimAccount,
-        changePassword,
-
-        updateWeapon,
-
-        transfer,
-        troopClaim,
-        regionalClaim,
-        borderClaim,
-        getLedger,
-
-        submitClaim,
-
-        disableAccount,
-        enableAccount,
-        adjustBalance
-
-    };
-
-})();
+  async adminAdjustBalance(player, password, targetPlayer, amount, notes) {
+    return this.request({ action: "adminBalanceAdjust", player, password, targetPlayer, amount, notes });
+  }
+};

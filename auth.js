@@ -1,1 +1,160 @@
-const loginForm = document.getElementById(\"loginForm\");\nconst loginBtn = document.getElementById(\"loginBtn\");\nconst confirmGroup = document.getElementById(\"confirmPasswordGroup\");\nconst loginHint = document.getElementById(\"loginHint\");\n\nlet claimMode = false;\nlet currentCachedWeapons = {};\n\nloginForm.addEventListener(\"submit\", function (e) {\n  e.preventDefault();\n  const user = document.getElementById(\"loginUser\").value;\n  const pass = document.getElementById(\"loginPass\").value;\n  const confirmPass = document.getElementById(\"confirmPassword\").value;\n  if (!user) return;\n\n  if (claimMode && pass !== confirmPass) {\n    loginHint.textContent = \"Passwords don't match.\";\n    return;\n  }\n\n  loginBtn.disabled = true;\n  loginBtn.textContent = claimMode ? \"SETTING PASSWORD...\" : \"AUTHENTICATING...\";\n\n  const action = claimMode ? \"claim\" : \"login\";\n  const params = claimMode\n    ? { action, player: user, newPassword: pass }\n    : { action, player: user, password: pass };\n\n  jsonpRequest(\n    params,\n    function (data) {\n      loginBtn.disabled = false;\n\n      if (data.status === \"unclaimed\") {\n        claimMode = true;\n        confirmGroup.style.display = \"block\";\n        loginHint.textContent =\n          \"No password set yet. Choose one now (6+ characters) to claim this account.\";\n        loginBtn.textContent = \"SET PASSWORD & CONTINUE\";\n        return;\n      }\n\n      if (data.status === \"success\") {\n        activeSessionUser = user;\n        activeSessionPassword = pass;\n        currentCachedWeapons = data.weapons || {};\n        isLoggedIn = true;\n\n        document.getElementById(\"loginWrapper\").style.display = \"none\";\n        document.getElementById(\"appWorkspace\").style.display = \"block\";\n\n        if (data.isAdmin) {\n          document.getElementById(\"adminNavLink\").style.display = \"inline-block\";\n          document.getElementById(\"mobileAdminTab\").style.display = \"flex\";\n        }\n\n        updateNavLayout();\n        renderWeaponsGrid(currentCachedWeapons);\n        updateBalanceDisplay(data.balance || 0);\n      } else {\n        loginBtn.textContent = claimMode ? \"SET PASSWORD & CONTINUE\" : \"ACCESS DATABASE\";\n        loginHint.textContent = data.message || \"Something went wrong.\";\n      }\n    },\n    function () {\n      loginBtn.disabled = false;\n      loginBtn.textContent = claimMode ? \"SET PASSWORD & CONTINUE\" : \"ACCESS DATABASE\";\n      loginHint.textContent = \"Network error — check your connection and try again.\";\n    },\n  );\n});\n\nfunction onLogout() {\n  claimMode = false;\n  currentCachedWeapons = {};\n  confirmGroup.style.display = \"none\";\n  loginBtn.textContent = \"ACCESS DATABASE\";\n  loginHint.textContent = \"\";\n}\n
+/**
+ * ============================================
+ * auth.js
+ * Authentication & account claiming
+ * ============================================
+ */
+
+const loginForm = document.getElementById("loginForm");
+const loginButton = document.getElementById("loginBtn");
+
+const loginHint = document.getElementById("loginHint");
+
+const confirmGroup =
+    document.getElementById("confirmPasswordGroup");
+
+loginForm.addEventListener(
+    "submit",
+    handleLogin
+);
+
+async function handleLogin(event) {
+
+    event.preventDefault();
+
+    const username =
+        document.getElementById("loginUser").value.trim();
+
+    const password =
+        document.getElementById("loginPass").value;
+
+    const confirmPassword =
+        document.getElementById("confirmPassword").value;
+
+    if (!username) return;
+
+    if (
+        AppState.claimMode &&
+        password !== confirmPassword
+    ) {
+
+        loginHint.textContent =
+            "Passwords do not match.";
+
+        return;
+
+    }
+
+    showLoading(
+        loginButton,
+        AppState.claimMode
+            ? "SETTING PASSWORD..."
+            : "AUTHENTICATING..."
+    );
+
+    loginHint.textContent = "";
+
+    try {
+
+        let response;
+
+        if (AppState.claimMode) {
+
+            response =
+                await API.claimAccount(
+                    username,
+                    password
+                );
+
+        }
+
+        else {
+
+            response =
+                await API.login(
+                    username,
+                    password
+                );
+
+        }
+
+        stopLoading(loginButton);
+
+        switch (response.status) {
+
+            case "unclaimed":
+
+                AppState.claimMode = true;
+
+                confirmGroup.style.display = "block";
+
+                loginButton.textContent =
+                    "SET PASSWORD & CONTINUE";
+
+                loginHint.textContent =
+                    "This account has not been claimed. Choose a password to continue.";
+
+                break;
+
+            case "success":
+
+                AppState.claimMode = false;
+
+                confirmGroup.style.display = "none";
+
+                onLoginSuccess(
+                    response,
+                    username,
+                    password
+                );
+
+                break;
+
+            default:
+
+                loginButton.textContent =
+                    AppState.claimMode
+                        ? "SET PASSWORD & CONTINUE"
+                        : "ACCESS DATABASE";
+
+                loginHint.textContent =
+                    response.message ||
+                    "Authentication failed.";
+
+        }
+
+    }
+
+    catch (error) {
+
+        stopLoading(loginButton);
+
+        loginButton.textContent =
+            AppState.claimMode
+                ? "SET PASSWORD & CONTINUE"
+                : "ACCESS DATABASE";
+
+        loginHint.textContent =
+            error.message ||
+            "Unable to reach the server.";
+
+    }
+
+}
+
+/**
+ * Reset authentication UI.
+ * Called from app.js during logout.
+ */
+function onLogout() {
+
+    AppState.claimMode = false;
+
+    confirmGroup.style.display = "none";
+
+    loginHint.textContent = "";
+
+    loginButton.textContent =
+        "ACCESS DATABASE";
+
+}

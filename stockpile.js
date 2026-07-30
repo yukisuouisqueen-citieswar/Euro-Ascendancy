@@ -1,1 +1,178 @@
-document.getElementById(\"trackerForm\").addEventListener(\"submit\", function (e) {\n  e.preventDefault();\n  const btn = document.getElementById(\"submitBtn\");\n  const weapon = document.getElementById(\"weaponSelect\").value;\n  const qty = document.getElementById(\"quantityInput\").value;\n  if (!weapon) return;\n\n  btn.disabled = true;\n  btn.textContent = \"UPDATING...\";\n\n  jsonpRequest(\n    {\n      action: \"weapon\",\n      player: activeSessionUser,\n      password: activeSessionPassword,\n      weapon,\n      quantity: qty,\n    },\n    function (data) {\n      btn.disabled = false;\n      btn.textContent = \"SAVE COUNT\";\n      if (data.status === \"success\") {\n        currentCachedWeapons[weapon] = qty;\n        renderWeaponsGrid(currentCachedWeapons);\n        document.getElementById(\"weaponSelect\").value = \"\";\n        document.getElementById(\"quantityInput\").value = \"\";\n      } else {\n        alert(\"Couldn't save: \" + (data.message || \"unknown error\"));\n      }\n    },\n    function () {\n      btn.disabled = false;\n      btn.textContent = \"SAVE COUNT\";\n      alert(\"Network error — the update may not have saved. Try again.\");\n    },\n  );\n});\n\nfunction renderWeaponsGrid(weaponsObj) {\n  const grid = document.getElementById(\"liveWeaponsGrid\");\n  if (!weaponsObj || Object.keys(weaponsObj).length === 0) {\n    grid.innerHTML = `<p class=\"empty-note\">No stockpile data on file yet.</p>`;\n    return;\n  }\n  let html = \"\";\n  Object.keys(weaponsObj)\n    .sort()\n    .forEach((key) => {\n      const raw = weaponsObj[key];\n      const display =\n        raw !== \"\" && !isNaN(raw) ? Number(raw).toLocaleString() : raw || \"0\";\n      html += `<div class=\"weapon-row\"><span>${key}</span><span class=\"weapon-count\">${display}</span></div>`;\n    });\n  grid.innerHTML = html;\n}\n
+/**
+ * ============================================
+ * stockpile.js
+ * Player stockpile management
+ * ============================================
+ */
+
+const trackerForm = document.getElementById("trackerForm");
+
+trackerForm.addEventListener(
+    "submit",
+    saveWeaponCount
+);
+
+/**
+ * Save a weapon count.
+ */
+async function saveWeaponCount(event) {
+
+    event.preventDefault();
+
+    const weapon =
+        document.getElementById("weaponSelect").value;
+
+    const quantity =
+        document.getElementById("quantityInput").value;
+
+    const button =
+        document.getElementById("submitBtn");
+
+    if (!weapon) return;
+
+    showLoading(
+        button,
+        "UPDATING..."
+    );
+
+    try {
+
+        const response =
+            await API.updateWeapon(
+                weapon,
+                quantity
+            );
+
+        stopLoading(button);
+
+        if (response.status !== "success") {
+
+            notify(
+                response.message ||
+                "Unable to save weapon count."
+            );
+
+            return;
+
+        }
+
+        AppState.weapons[weapon] = quantity;
+
+        renderWeaponsGrid(AppState.weapons);
+
+        trackerForm.reset();
+
+    }
+
+    catch (error) {
+
+        stopLoading(button);
+
+        notify(
+            error.message ||
+            "Unable to contact the server."
+        );
+
+    }
+
+}
+
+/**
+ * Render the player's stockpile.
+ */
+function renderWeaponsGrid(weapons = {}) {
+
+    const grid =
+        document.getElementById("liveWeaponsGrid");
+
+    if (
+        !weapons ||
+        Object.keys(weapons).length === 0
+    ) {
+
+        grid.innerHTML =
+            `<p class="empty-note">
+                No stockpile data available.
+            </p>`;
+
+        return;
+
+    }
+
+    let html = "";
+
+    Object.keys(weapons)
+        .sort()
+        .forEach(weapon => {
+
+            const value = weapons[weapon];
+
+            const display =
+                value !== "" &&
+                !isNaN(value)
+                    ? Number(value).toLocaleString()
+                    : value || "0";
+
+            html += `
+                <div class="weapon-row">
+
+                    <span>
+                        ${weapon}
+                    </span>
+
+                    <span class="weapon-count">
+                        ${display}
+                    </span>
+
+                </div>
+            `;
+
+        });
+
+    grid.innerHTML = html;
+
+}
+
+/**
+ * Replace the current stockpile.
+ * Useful after login or refresh.
+ */
+function setWeapons(weapons = {}) {
+
+    AppState.weapons = weapons;
+
+    renderWeaponsGrid(
+        AppState.weapons
+    );
+
+}
+
+/**
+ * Refresh stockpile from server.
+ * (Useful later for manual refresh button.)
+ */
+async function refreshWeapons() {
+
+    if (!API.getWeapons) return;
+
+    try {
+
+        const response =
+            await API.getWeapons();
+
+        if (response.status !== "success")
+            return;
+
+        setWeapons(
+            response.weapons || {}
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+    }
+
+}

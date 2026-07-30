@@ -315,4 +315,3 @@ async function loadHistory() {
   } catch (err) {
     historyList.innerHTML = `<p class='empty-note'>Error loading history: ${err.message}</p>`;
   }
-}

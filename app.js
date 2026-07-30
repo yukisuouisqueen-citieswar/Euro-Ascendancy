@@ -1,568 +1,318 @@
-const MACRO_URL =
-"https://script.google.com/macros/s/AKfycbzOFaofIbsqy8bMW8q7Jf0wZPzKF6aqTIEpuQHzdwielfsuqoP36OVjzCaOWorytQ5J/exec";
+/**
+ * app.js
+ * Frontend controller strictly matching index.html IDs and DOM structure
+ */
 
-const MOBILE_BREAKPOINT = 768;
+const AppState = {
+  user: localStorage.getItem("ea_user") || null,
+  password: localStorage.getItem("ea_password") || null,
+  isAdmin: localStorage.getItem("ea_isAdmin") === "true",
 
-let activeSessionUser = "";
-let activeSessionPassword = ""; // memory only, never stored
-let currentCachedWeapons = {};
-let claimMode = false;
-let isLoggedIn = false;
-let selectedFile = null;
+  setSession(user, password, isAdmin) {
+    this.user = user;
+    this.password = password;
+    this.isAdmin = Boolean(isAdmin);
 
-function updateNavLayout() {
-  const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
-  document.body.classList.toggle("is-mobile", isMobile);
+    localStorage.setItem("ea_user", user);
+    localStorage.setItem("ea_password", password);
+    localStorage.setItem("ea_isAdmin", this.isAdmin);
+  },
 
-  if (!isLoggedIn) return;
+  clearSession() {
+    this.user = null;
+    this.password = null;
+    this.isAdmin = false;
+    localStorage.clear();
+  },
 
-  if (isMobile) {
-    document.getElementById("navLinks").style.display = "none";
-    document.getElementById("mobileTabbar").style.display = "flex";
+  isLoggedIn() {
+    return Boolean(this.user && this.password);
+  }
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  initApp();
+});
+
+function initApp() {
+  setupNavigation();
+  setupForms();
+  
+  if (AppState.isLoggedIn()) {
+    showWorkspace();
   } else {
-    document.getElementById("navLinks").style.display = "flex";
-    document.getElementById("mobileTabbar").style.display = "none";
+    showLanding();
   }
 }
 
-window.addEventListener("resize", updateNavLayout);
-updateNavLayout();
+/* ==========================================
+   NAVIGATION & UI PANES
+   ========================================== */
 
-const loginForm = document.getElementById("loginForm");
-const loginBtn = document.getElementById("loginBtn");
-const confirmGroup = document.getElementById("confirmPasswordGroup");
-const loginHint = document.getElementById("loginHint");
+function setupNavigation() {
+  const navButtons = document.querySelectorAll("[data-pane]");
+  navButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const paneId = btn.getAttribute("data-pane");
+      switchPane(paneId);
+    });
+  });
+}
+
+function switchPane(paneId) {
+  // Hide all panes
+  const panes = document.querySelectorAll(".pane");
+  panes.forEach(pane => pane.style.display = "none");
+
+  // Show target pane
+  const targetPane = document.getElementById(paneId);
+  if (targetPane) {
+    targetPane.style.display = "block";
+  }
+
+  // Update active state on nav buttons
+  document.querySelectorAll("[data-pane]").forEach(btn => {
+    if (btn.getAttribute("data-pane") === paneId) {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
+  });
+
+  // Load section specific data
+  if (paneId === "stockpilePane") loadStockpile();
+  if (paneId === "bankPane") loadBank();
+  if (paneId === "historyPane") loadHistory();
+}
+
+function showLanding() {
+  document.getElementById("landing").style.display = "block";
+  document.getElementById("about").style.display = "block";
+  document.getElementById("loginWrapper").style.display = "none";
+  document.getElementById("appWorkspace").style.display = "none";
+  document.getElementById("navLinks").style.display = "none";
+  document.getElementById("mobileTabbar").style.display = "none";
+}
 
 function showLogin() {
   document.getElementById("landing").style.display = "none";
   document.getElementById("about").style.display = "none";
-  document.getElementById("loginWrapper").style.display = "flex";
-  window.scrollTo(0, 0);
+  document.getElementById("loginWrapper").style.display = "block";
+  document.getElementById("appWorkspace").style.display = "none";
 }
 
-function jsonpRequest(params, onSuccess, onError) {
-  const callbackName = "jsonp_" + Math.round(1e6 * Math.random());
-  window[callbackName] = function (data) {
-    delete window[callbackName];
-    document.body.removeChild(scriptTag);
-    onSuccess(data);
-  };
-  const query = new URLSearchParams({
-    ...params,
-    callback: callbackName,
-  }).toString();
-  const scriptTag = document.createElement("script");
-  scriptTag.src = `${MACRO_URL}?${query}`;
-  scriptTag.onerror = function () {
-    if (window[callbackName]) delete window[callbackName];
-    if (scriptTag.parentNode) document.body.removeChild(scriptTag);
-    onError();
-  };
-  document.body.appendChild(scriptTag);
-}
+function showWorkspace() {
+  document.getElementById("landing").style.display = "none";
+  document.getElementById("about").style.display = "none";
+  document.getElementById("loginWrapper").style.display = "none";
+  document.getElementById("appWorkspace").style.display = "block";
+  
+  document.getElementById("navLinks").style.display = "flex";
+  document.getElementById("mobileTabbar").style.display = "flex";
 
-// ---------------- Login / Claim ----------------
-
-loginForm.addEventListener("submit", function (e) {
-  e.preventDefault();
-  const user = document.getElementById("loginUser").value;
-  const pass = document.getElementById("loginPass").value;
-  const confirmPass = document.getElementById("confirmPassword").value;
-  if (!user) return;
-
-  if (claimMode && pass !== confirmPass) {
-    loginHint.textContent = "Passwords don't match.";
-    return;
+  // Toggle Admin Nav Visibility
+  if (AppState.isAdmin) {
+    document.getElementById("adminNavLink").style.display = "inline-block";
+    document.getElementById("mobileAdminTab").style.display = "flex";
+  } else {
+    document.getElementById("adminNavLink").style.display = "none";
+    document.getElementById("mobileAdminTab").style.display = "none";
   }
 
-  loginBtn.disabled = true;
-  loginBtn.textContent = claimMode
-    ? "SETTING PASSWORD..."
-    : "AUTHENTICATING...";
-
-  const action = claimMode ? "claim" : "login";
-  const params = claimMode
-    ? { action, player: user, newPassword: pass }
-    : { action, player: user, password: pass };
-
-  jsonpRequest(
-    params,
-    function (data) {
-      loginBtn.disabled = false;
-
-      if (data.status === "unclaimed") {
-        claimMode = true;
-        confirmGroup.style.display = "block";
-        loginHint.textContent =
-          "No password set yet. Choose one now (6+ characters) to claim this account.";
-        loginBtn.textContent = "SET PASSWORD & CONTINUE";
-        return;
-      }
-
-      if (data.status === "success") {
-        activeSessionUser = user;
-        activeSessionPassword = pass;
-        currentCachedWeapons = data.weapons || {};
-        isLoggedIn = true;
-
-        document.getElementById("loginWrapper").style.display = "none";
-        document.getElementById("appWorkspace").style.display = "block";
-
-        if (data.isAdmin) {
-          document.getElementById("adminNavLink").style.display = "inline-block";
-          document.getElementById("mobileAdminTab").style.display = "flex";
-        }
-
-        updateNavLayout();
-        renderWeaponsGrid(currentCachedWeapons);
-        updateBalanceDisplay(data.balance || 0);
-      } else {
-        loginBtn.textContent = claimMode
-          ? "SET PASSWORD & CONTINUE"
-          : "ACCESS DATABASE";
-        loginHint.textContent = data.message || "Something went wrong.";
-      }
-    },
-    function () {
-      loginBtn.disabled = false;
-      loginBtn.textContent = claimMode
-        ? "SET PASSWORD & CONTINUE"
-        : "ACCESS DATABASE";
-      loginHint.textContent =
-        "Network error — check your connection and try again.";
-    },
-  );
-});
-
-// ---------------- Tab navigation ----------------
-
-function switchPane(paneId) {
-    document.querySelectorAll(".navlink[data-pane]").forEach((b) => b.classList.remove("active"));
-    document.querySelectorAll(".tab-item[data-pane]").forEach((b) => b.classList.remove("active"));
-    const desktopBtn = document.querySelector(`.navlink[data-pane="${paneId}"]`);
-    const mobileBtn = document.querySelector(`.tab-item[data-pane="${paneId}"]`);
-    if (desktopBtn) desktopBtn.classList.add("active");
-    if (mobileBtn) mobileBtn.classList.add("active");
-    document.querySelectorAll(".pane").forEach((p) => (p.style.display = "none"));
-    const pane = document.getElementById(paneId);
-    pane.style.display = "block";
-    if (paneId === "historyPane") loadHistory();
+  switchPane("stockpilePane");
 }
-
-document.querySelectorAll(".navlink[data-pane]").forEach((btn) => {
-  btn.addEventListener("click", () => switchPane(btn.dataset.pane));
-});
-
-document.querySelectorAll(".tab-item[data-pane]").forEach((btn) => {
-  btn.addEventListener("click", () => switchPane(btn.dataset.pane));
-});
-
-// ---------------- Stockpile ----------------
-
-document.getElementById("trackerForm").addEventListener("submit", function (e) {
-  e.preventDefault();
-  const btn = document.getElementById("submitBtn");
-  const weapon = document.getElementById("weaponSelect").value;
-  const qty = document.getElementById("quantityInput").value;
-  if (!weapon) return;
-
-  btn.disabled = true;
-  btn.textContent = "UPDATING...";
-
-  jsonpRequest(
-    {
-      action: "weapon",
-      player: activeSessionUser,
-      password: activeSessionPassword,
-      weapon,
-      quantity: qty,
-    },
-    function (data) {
-      btn.disabled = false;
-      btn.textContent = "SAVE COUNT";
-      if (data.status === "success") {
-        currentCachedWeapons[weapon] = qty;
-        renderWeaponsGrid(currentCachedWeapons);
-        document.getElementById("weaponSelect").value = "";
-        document.getElementById("quantityInput").value = "";
-      } else {
-        alert("Couldn't save: " + (data.message || "unknown error"));
-      }
-    },
-    function () {
-      btn.disabled = false;
-      btn.textContent = "SAVE COUNT";
-      alert("Network error — the update may not have saved. Try again.");
-    },
-  );
-});
-
-function renderWeaponsGrid(weaponsObj) {
-  const grid = document.getElementById("liveWeaponsGrid");
-  if (!weaponsObj || Object.keys(weaponsObj).length === 0) {
-    grid.innerHTML = `<p class="empty-note">No stockpile data on file yet.</p>`;
-    return;
-  }
-  let html = "";
-  Object.keys(weaponsObj)
-    .sort()
-    .forEach((key) => {
-      const raw = weaponsObj[key];
-      const display =
-        raw !== "" && !isNaN(raw) ? Number(raw).toLocaleString() : raw || "0";
-      html += `<div class="weapon-row"><span>${key}</span><span class="weapon-count">${display}</span></div>`;
-    });
-  grid.innerHTML = html;
-}
-
-// ---------------- Bank: balance / claim / transfer ----------------
-
-function updateBalanceDisplay(balance) {
-  document.getElementById("balanceAmount").textContent =
-    Number(balance).toLocaleString() + " g";
-}
-
-document.getElementById("claimForm").addEventListener("submit", function (e) {
-  e.preventDefault();
-  const btn = document.getElementById("claimBtn");
-  const type = document.getElementById("claimType").value;
-  const amount = document.getElementById("claimAmount").value;
-  const notes = document.getElementById("claimNotes").value;
-
-  const actionMap = {
-    troops: "claimTroops",
-    regional: "claimRegional",
-    borderday: "claimBorderDay",
-  };
-  const amountKeyMap = {
-    troops: "amount",
-    regional: "medals",
-    borderday: "days",
-  };
-  const amountKey = amountKeyMap[type];
-
-  btn.disabled = true;
-  btn.textContent = "CLAIMING...";
-
-  jsonpRequest(
-    {
-      action: actionMap[type],
-      player: activeSessionUser,
-      password: activeSessionPassword,
-      [amountKey]: amount,
-      notes,
-    },
-    function (data) {
-      btn.disabled = false;
-      btn.textContent = "CLAIM";
-      if (data.status === "success") {
-        updateBalanceDisplay(data.balance);
-        document.getElementById("claimForm").reset();
-        alert(`Claimed ${Number(data.payout).toLocaleString()} gold.`);
-      } else {
-        alert("Couldn't claim: " + (data.message || "unknown error"));
-      }
-    },
-    function () {
-      btn.disabled = false;
-      btn.textContent = "CLAIM";
-      alert("Network error — try again.");
-    },
-  );
-});
-
-document
-  .getElementById("transferForm")
-  .addEventListener("submit", function (e) {
-    e.preventDefault();
-    const btn = document.getElementById("transferBtn");
-    const toPlayer = document.getElementById("transferTo").value;
-    const amount = document.getElementById("transferAmount").value;
-    if (!toPlayer) return;
-
-    btn.disabled = true;
-    btn.textContent = "SENDING...";
-
-    jsonpRequest(
-      {
-        action: "transfer",
-        player: activeSessionUser,
-        password: activeSessionPassword,
-        toPlayer,
-        amount,
-      },
-      function (data) {
-        btn.disabled = false;
-        btn.textContent = "SEND";
-        if (data.status === "success") {
-          updateBalanceDisplay(data.balance);
-          document.getElementById("transferForm").reset();
-          alert(`Sent ${Number(amount).toLocaleString()} gold to ${toPlayer}.`);
-        } else {
-          alert("Couldn't send: " + (data.message || "unknown error"));
-        }
-      },
-      function () {
-        btn.disabled = false;
-        btn.textContent = "SEND";
-        alert("Network error — try again.");
-      },
-    );
-  });
-
-// ---------------- Claims ----------------
-
-function setupFileUpload() {
-  const fileInput = document.getElementById("battleReportUpload");
-  const fileUploadArea = document.getElementById("fileUploadArea");
-  const fileUploadContainer = document.getElementById("fileUploadContainer");
-  const filePreview = document.getElementById("filePreview");
-  const fileName = document.getElementById("fileName");
-
-  // Click to browse
-  fileUploadArea.addEventListener("click", () => fileInput.click());
-  fileUploadArea.addEventListener("click", (e) => {
-    if (e.target.classList.contains("upload-link")) {
-      fileInput.click();
-    }
-  });
-
-  // File input change
-  fileInput.addEventListener("change", (e) => {
-    if (e.target.files.length > 0) {
-      selectedFile = e.target.files[0];
-      displayFilePreview(selectedFile.name);
-    }
-  });
-
-  // Drag and drop
-  fileUploadArea.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    fileUploadArea.classList.add("dragover");
-  });
-
-  fileUploadArea.addEventListener("dragleave", () => {
-    fileUploadArea.classList.remove("dragover");
-  });
-
-  fileUploadArea.addEventListener("drop", (e) => {
-    e.preventDefault();
-    fileUploadArea.classList.remove("dragover");
-    if (e.dataTransfer.files.length > 0) {
-      const file = e.dataTransfer.files[0];
-      if (file.type.startsWith("image/")) {
-        selectedFile = file;
-        fileInput.files = e.dataTransfer.files;
-        displayFilePreview(file.name);
-      } else {
-        alert("Please drop an image file (PNG, JPG, GIF).");
-      }
-    }
-  });
-
-  function displayFilePreview(name) {
-    fileUploadArea.style.display = "none";
-    filePreview.style.display = "flex";
-    fileName.textContent = name;
-  }
-}
-
-function clearFileUpload() {
-  selectedFile = null;
-  document.getElementById("battleReportUpload").value = "";
-  document.getElementById("fileUploadArea").style.display = "block";
-  document.getElementById("filePreview").style.display = "none";
-}
-
-document.getElementById("claimsForm").addEventListener("submit", function (e) {
-  e.preventDefault();
-  const btn = document.getElementById("claimsSubmitBtn");
-  const claimTypeSelect = document.getElementById("claimTypeSelect").value;
-  const troopsLost = document.getElementById("troopsLostInput").value;
-  const hint = document.getElementById("claimsHint");
-
-  if (!claimTypeSelect || !troopsLost) {
-    hint.textContent = "Please fill out all fields.";
-    hint.style.color = "var(--bad)";
-    return;
-  }
-
-  if (!selectedFile) {
-    hint.textContent = "Please upload a battle report screenshot.";
-    hint.style.color = "var(--bad)";
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = "SUBMITTING...";
-  hint.textContent = "";
-
-  // Placeholder for now - will be connected to Apps Script
-  jsonpRequest(
-    {
-      action: "submitClaim",
-      player: activeSessionUser,
-      password: activeSessionPassword,
-      claimType: claimTypeSelect,
-      troops: troopsLost,
-    },
-    function (data) {
-      btn.disabled = false;
-      btn.textContent = "SUBMIT CLAIM";
-      if (data.status === "success") {
-        hint.textContent = `Claim #${data.claimId} submitted successfully!`;
-        hint.style.color = "var(--good)";
-        document.getElementById("claimsForm").reset();
-        clearFileUpload();
-      } else {
-        hint.textContent = data.message || "Couldn't submit claim.";
-        hint.style.color = "var(--bad)";
-      }
-    },
-    function () {
-      btn.disabled = false;
-      btn.textContent = "SUBMIT CLAIM";
-      hint.textContent = "Network error — try again.";
-      hint.style.color = "var(--bad)";
-    },
-  );
-});
-
-// Initialize file upload on page load
-setupFileUpload();
-
-// ---------------- History ----------------
-
-function loadHistory() {
-  const list = document.getElementById("historyList");
-  list.innerHTML = `<p class="empty-note">Loading...</p>`;
-
-  jsonpRequest(
-    {
-      action: "ledger",
-      player: activeSessionUser,
-      password: activeSessionPassword,
-    },
-    function (data) {
-      if (data.status !== "success") {
-        list.innerHTML = `<p class="empty-note">${data.message || "Couldn't load history."}</p>`;
-        return;
-      }
-      if (!data.history || data.history.length === 0) {
-        list.innerHTML = `<p class="empty-note">No transactions yet.</p>`;
-        return;
-      }
-      let html = "";
-      data.history.forEach((item) => {
-        const amt = Number(item.amount);
-        const cls = amt >= 0 ? "positive" : "negative";
-        const sign = amt >= 0 ? "+" : "";
-        html += `
-          <div class="ledger-row">
-            <div>
-              <div class="ledger-type">${item.type}</div>
-              <div class="ledger-notes">${item.notes || ""}</div>
-              <div class="ledger-meta">${item.date}</div>
-            </div>
-            <div class="ledger-amount ${cls}">${sign}${amt.toLocaleString()}</div>
-          </div>`;
-      });
-      list.innerHTML = html;
-    },
-    function () {
-      list.innerHTML = `<p class="empty-note">Network error loading history.</p>`;
-    },
-  );
-}
-
-// ---------------- Admin ----------------
-
-document.getElementById("adminForm").addEventListener("submit", function (e) {
-  e.preventDefault();
-  const mode = e.submitter.dataset.mode; // 'disable' or 'enable'
-  const target = document.getElementById("adminTargetUser").value;
-  const hint = document.getElementById("adminHint");
-  if (!target) return;
-
-  hint.textContent = "Working...";
-  jsonpRequest(
-    {
-      action: mode === "disable" ? "disableAccount" : "enableAccount",
-      player: activeSessionUser,
-      password: activeSessionPassword,
-      targetPlayer: target,
-    },
-    function (data) {
-      if (data.status === "success") {
-        hint.textContent = `${target} has been ${data.disabled ? "disabled" : "re-enabled"}.`;
-      } else {
-        hint.textContent = data.message || "Something went wrong.";
-      }
-    },
-    function () {
-      hint.textContent = "Network error — try again.";
-    },
-  );
-});
-
-document
-  .getElementById("overrideForm")
-  .addEventListener("submit", function (e) {
-    e.preventDefault();
-    const btn = document.getElementById("overrideBtn");
-    const target = document.getElementById("overrideTargetUser").value;
-    const amount = document.getElementById("overrideAmount").value;
-    const notes = document.getElementById("overrideNotes").value;
-    const hint = document.getElementById("overrideHint");
-    if (!target || !amount) return;
-
-    btn.disabled = true;
-    btn.textContent = "APPLYING...";
-
-    jsonpRequest(
-      {
-        action: "adminAdjust",
-        player: activeSessionUser,
-        password: activeSessionPassword,
-        targetPlayer: target,
-        amount,
-        notes,
-      },
-      function (data) {
-        btn.disabled = false;
-        btn.textContent = "APPLY";
-        if (data.status === "success") {
-          hint.textContent = `${target}'s new balance: ${Number(data.balance).toLocaleString()} g`;
-          document.getElementById("overrideForm").reset();
-        } else {
-          hint.textContent = data.message || "Something went wrong.";
-        }
-      },
-      function () {
-        btn.disabled = false;
-        btn.textContent = "APPLY";
-        hint.textContent = "Network error — try again.";
-      },
-    );
-  });
-
-// ---------------- Logout ----------------
 
 function logout() {
-  activeSessionUser = "";
-  activeSessionPassword = "";
-  currentCachedWeapons = {};
-  claimMode = false;
-  isLoggedIn = false;
-  confirmGroup.style.display = "none";
-  loginBtn.textContent = "ACCESS DATABASE";
-  loginHint.textContent = "";
-  document.getElementById("navLinks").style.display = "none";
-  document.getElementById("mobileTabbar").style.display = "none";
-  document.getElementById("adminNavLink").style.display = "none";
-  document.getElementById("mobileAdminTab").style.display = "none";
-  document.getElementById("appWorkspace").style.display = "none";
-  document.getElementById("loginWrapper").style.display = "flex";
-  loginForm.reset();
-  clearFileUpload();
+  AppState.clearSession();
+  showLanding();
+}
+
+/* ==========================================
+   FORM HANDLERS
+   ========================================== */
+
+function setupForms() {
+  // Login Form
+  const loginForm = document.getElementById("loginForm");
+  if (loginForm) {
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const user = document.getElementById("loginUser").value;
+      const pass = document.getElementById("loginPass").value;
+      const hint = document.getElementById("loginHint");
+
+      hint.textContent = "Authenticating...";
+      try {
+        const res = await API.login(user, pass);
+        if (res.status === "success") {
+          AppState.setSession(res.player, pass, res.isAdmin);
+          hint.textContent = "";
+          showWorkspace();
+        } else {
+          hint.textContent = res.error || "Login failed.";
+        }
+      } catch (err) {
+        hint.textContent = "Error: " + err.message;
+      }
+    });
+  }
+
+  // Weapon Count Form
+  const trackerForm = document.getElementById("trackerForm");
+  if (trackerForm) {
+    trackerForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const weapon = document.getElementById("weaponSelect").value;
+      const quantity = parseInt(document.getElementById("quantityInput").value, 10);
+
+      try {
+        const res = await API.updateWeapon(AppState.user, AppState.password, weapon, quantity);
+        if (res.status === "success") {
+          alert(`Stockpile updated: ${weapon} set to ${quantity}`);
+          loadStockpile();
+        } else {
+          alert(res.error || "Failed to update stockpile.");
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  }
+
+  // Transfer Form
+  const transferForm = document.getElementById("transferForm");
+  if (transferForm) {
+    transferForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const toPlayer = document.getElementById("transferTo").value;
+      const amount = parseFloat(document.getElementById("transferAmount").value);
+
+      try {
+        const res = await API.transfer(AppState.user, AppState.password, toPlayer, amount);
+        if (res.status === "success") {
+          alert(res.message);
+          transferForm.reset();
+          loadBank();
+        } else {
+          alert(res.error || "Transfer failed.");
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  }
+
+  // Claim Form (Bank Pane)
+  const claimForm = document.getElementById("claimForm");
+  if (claimForm) {
+    claimForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const type = document.getElementById("claimType").value;
+      const amount = parseInt(document.getElementById("claimAmount").value, 10);
+      const notes = document.getElementById("claimNotes").value;
+
+      try {
+        const res = await API.submitClaim(AppState.user, AppState.password, type, amount, notes);
+        if (res.status === "success") {
+          alert("Claim submitted successfully!");
+          claimForm.reset();
+        } else {
+          alert(res.error || "Claim submission failed.");
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  }
+
+  // Admin Override Form
+  const overrideForm = document.getElementById("overrideForm");
+  if (overrideForm) {
+    overrideForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const targetUser = document.getElementById("overrideTargetUser").value;
+      const amount = parseFloat(document.getElementById("overrideAmount").value);
+      const notes = document.getElementById("overrideNotes").value;
+      const hint = document.getElementById("overrideHint");
+
+      try {
+        const res = await API.adminAdjustBalance(AppState.user, AppState.password, targetUser, amount, notes);
+        if (res.status === "success") {
+          hint.textContent = res.message;
+          overrideForm.reset();
+        } else {
+          hint.textContent = res.error || "Adjustment failed.";
+        }
+      } catch (err) {
+        hint.textContent = "Error: " + err.message;
+      }
+    });
+  }
+}
+
+/* ==========================================
+   DATA LOADERS
+   ========================================== */
+
+async function loadStockpile() {
+  const grid = document.getElementById("liveWeaponsGrid");
+  grid.innerHTML = "<p class='empty-note'>Loading inventory...</p>";
+
+  try {
+    const res = await API.getStockpile(AppState.user, AppState.password);
+    if (res.status === "success" && res.stockpile) {
+      grid.innerHTML = "";
+      Object.keys(res.weaponStats).forEach(weapon => {
+        const count = res.stockpile[weapon] || 0;
+        const div = document.createElement("div");
+        div.className = "weapon-item";
+        div.innerHTML = `<strong>${weapon}</strong>: <span>${count}</span>`;
+        grid.appendChild(div);
+      });
+    }
+  } catch (err) {
+    grid.innerHTML = `<p class='empty-note'>Error loading stockpile: ${err.message}</p>`;
+  }
+}
+
+async function loadBank() {
+  const balanceEl = document.getElementById("balanceAmount");
+  balanceEl.textContent = "Loading...";
+
+  try {
+    const res = await API.getBank(AppState.user, AppState.password);
+    if (res.status === "success") {
+      balanceEl.textContent = Number(res.goldBalance).toLocaleString() + " Gold";
+    }
+  } catch (err) {
+    balanceEl.textContent = "Error";
+  }
+}
+
+async function loadHistory() {
+  const historyList = document.getElementById("historyList");
+  historyList.innerHTML = "<p class='empty-note'>Loading transactions...</p>";
+
+  try {
+    const res = await API.getTransactions(AppState.user, AppState.password);
+    if (res.status === "success" && res.transactions) {
+      if (res.transactions.length === 0) {
+        historyList.innerHTML = "<p class='empty-note'>No transactions found.</p>";
+        return;
+      }
+
+      historyList.innerHTML = "";
+      res.transactions.reverse().forEach(tx => {
+        const item = document.createElement("div");
+        item.className = "history-item";
+        item.innerHTML = `
+          <div><strong>${tx.Type}</strong> - ${tx.Amount} Gold</div>
+          <small>${tx.Timestamp} | ${tx.Notes || ""}</small>
+        `;
+        historyList.appendChild(item);
+      });
+    }
+  } catch (err) {
+    historyList.innerHTML = `<p class='empty-note'>Error loading history: ${err.message}</p>`;
+  }
 }

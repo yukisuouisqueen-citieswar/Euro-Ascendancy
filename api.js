@@ -3,7 +3,7 @@
  * API communication layer connecting to your Google Apps Script Backend.gs
  */
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwGx6q-odlYUHDWwE9wPGvan7nYxoS_-iOKsmOqUybf7_sFXGhXfwuZeHlXpHPGiy71/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUch-jU47p2kih8V05K-vxkaQSHGJWdyMGnSnjWssG0pcfnd8_iPC2f5Fh_UPT6lho/exec";
 
 const API = {
   async request(params) {

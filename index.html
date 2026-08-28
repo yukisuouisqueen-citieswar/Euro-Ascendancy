@@ -11,9 +11,10 @@
 <body>
 
     <nav class="topnav">
-        <div class="brand">EURO <span>ASCENDANCY</span></div>
+        <button class="brand brand-button" type="button" onclick="switchPane('dashboardPane')">EURO <span>ASCENDANCY</span></button>
         <div class="navlinks" id="navLinks" style="display:none;">
-            <button class="navlink active" data-pane="stockpilePane">STOCKPILE</button>
+            <button class="navlink active" data-pane="dashboardPane">OVERVIEW</button>
+            <button class="navlink" data-pane="stockpilePane">STOCKPILE</button>
             <button class="navlink" data-pane="bankPane">BANK</button>
             <button class="navlink" data-pane="claimsPane">CLAIMS</button>
             <button class="navlink" data-pane="historyPane">HISTORY</button>
@@ -52,6 +53,7 @@
 
     <!-- ===== LANDING ===== -->
     <section class="landing" id="landing">
+        <div class="landing-overlay"></div>
         <div class="landing-content">
             <h1>EURO<br>ASCENDANCY</h1>
             <p class="landing-sub">ALLIANCE COMMAND PORTAL</p>
@@ -98,6 +100,86 @@
 
     <!-- ===== WORKSPACE ===== -->
     <main id="appWorkspace" style="display:none;">
+
+        <section class="pane dashboard-pane" id="dashboardPane">
+            <div class="dashboard-hero">
+                <div>
+                    <span class="dashboard-kicker">EURO ASCENDANCY // COMMAND</span>
+                    <h1>Command Overview</h1>
+                    <p class="dashboard-sub">Alliance operations at a glance.</p>
+                </div>
+                <div class="dashboard-status">
+                    <span class="status-dot"></span>
+                    <span>SYSTEM ONLINE</span>
+                    <small id="dashboardDate">—</small>
+                </div>
+            </div>
+
+            <div class="dashboard-profile card">
+                <div>
+                    <span class="card-label">Signed in as</span>
+                    <div class="dashboard-player" id="dashboardPlayer">—</div>
+                    <div class="dashboard-role" id="dashboardRole">MEMBER</div>
+                </div>
+                <div class="dashboard-access">SECURE ACCESS</div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="card dashboard-stat-card">
+                    <span class="card-label">Treasury</span>
+                    <div class="dashboard-stat-value" id="dashboardGold">—</div>
+                    <small>AVAILABLE GOLD</small>
+                </div>
+                <div class="card dashboard-stat-card">
+                    <span class="card-label">Pending Claims</span>
+                    <div class="dashboard-stat-value" id="dashboardClaims">—</div>
+                    <small id="dashboardClaimsLabel">AWAITING REVIEW</small>
+                </div>
+            </div>
+
+            <div class="card dashboard-power-card">
+                <div class="dashboard-section-head">
+                    <div>
+                        <span class="card-label">Military Strength</span>
+                        <h3>Current combat profile</h3>
+                    </div>
+                    <span class="dashboard-live-pill">LIVE</span>
+                </div>
+                <div class="dashboard-metrics">
+                    <div>
+                        <strong id="dashboardUnits">—</strong>
+                        <span>TOTAL UNITS</span>
+                    </div>
+                    <div>
+                        <strong id="dashboardAttack">—</strong>
+                        <span>ATTACK</span>
+                    </div>
+                    <div>
+                        <strong id="dashboardDefence">—</strong>
+                        <span>DEFENCE</span>
+                    </div>
+                </div>
+                <div class="dashboard-bar"><span id="dashboardPowerBar"></span></div>
+            </div>
+
+            <div class="card">
+                <div class="dashboard-section-head">
+                    <div>
+                        <span class="card-label">Recent Activity</span>
+                        <h3>Latest treasury movement</h3>
+                    </div>
+                    <button class="dashboard-link" type="button" onclick="switchPane('historyPane')">VIEW HISTORY</button>
+                </div>
+                <div id="dashboardActivity">
+                    <p class="empty-note">Loading activity...</p>
+                </div>
+            </div>
+
+            <div class="dashboard-actions">
+                <button class="btn btn-primary" type="button" onclick="switchPane('stockpilePane')">VIEW STOCKPILE</button>
+                <button class="btn btn-outline" type="button" onclick="switchPane('bankPane')">OPEN BANK</button>
+            </div>
+        </section>
 
         <section class="pane" id="stockpilePane">
             <h2>Stockpile</h2>

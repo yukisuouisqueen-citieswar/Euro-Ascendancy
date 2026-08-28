@@ -133,6 +133,7 @@ function switchPane(paneId) {
   });
 
   // Load section data
+  if (paneId === "dashboardPane") loadDashboard();
   if (paneId === "stockpilePane") loadStockpile();
   if (paneId === "bankPane") loadBank();
   if (paneId === "historyPane") loadHistory();
@@ -176,7 +177,7 @@ function showWorkspace() {
     if (mobileAdmin) mobileAdmin.style.display = "none";
   }
 
-  switchPane("stockpilePane");
+  switchPane("dashboardPane");
 }
 
 function logout() {
@@ -402,6 +403,138 @@ function setupClaimTypeUI() {
 }
 
 // ===== DATA LOADERS =====
+
+function setDashboardDate() {
+  const el = document.getElementById("dashboardDate");
+  if (!el) return;
+  const now = new Date();
+  el.textContent = now.toLocaleString([], {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).toUpperCase();
+}
+
+function formatNumber(value) {
+  return Number(value || 0).toLocaleString();
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+async function loadDashboard() {
+  setDashboardDate();
+
+  const playerEl = document.getElementById("dashboardPlayer");
+  const roleEl = document.getElementById("dashboardRole");
+  const goldEl = document.getElementById("dashboardGold");
+  const claimsEl = document.getElementById("dashboardClaims");
+  const claimsLabelEl = document.getElementById("dashboardClaimsLabel");
+  const unitsEl = document.getElementById("dashboardUnits");
+  const attackEl = document.getElementById("dashboardAttack");
+  const defenceEl = document.getElementById("dashboardDefence");
+  const powerBarEl = document.getElementById("dashboardPowerBar");
+  const activityEl = document.getElementById("dashboardActivity");
+
+  if (playerEl) playerEl.textContent = AppState.user || "—";
+  if (roleEl) roleEl.textContent = AppState.isAdmin ? "ADMINISTRATOR" : "MEMBER";
+  if (goldEl) goldEl.textContent = "Loading...";
+  if (claimsEl) claimsEl.textContent = "Loading...";
+  if (unitsEl) unitsEl.textContent = "—";
+  if (attackEl) attackEl.textContent = "—";
+  if (defenceEl) defenceEl.textContent = "—";
+  if (activityEl) activityEl.innerHTML = "<p class='empty-note'>Loading activity...</p>";
+
+  try {
+    const [bankRes, weaponRes, txRes, claimsRes] = await Promise.all([
+      API.getBank(AppState.user, AppState.password),
+      API.getStockpile(AppState.user, AppState.password),
+      API.getTransactions(AppState.user, AppState.password),
+      AppState.isAdmin
+        ? API.getPendingClaims(AppState.user, AppState.password)
+        : API.getMyClaims(AppState.user, AppState.password)
+    ]);
+
+    if (goldEl) {
+      goldEl.textContent = bankRes.status === "success"
+        ? `${formatNumber(bankRes.goldBalance)}`
+        : "ERROR";
+    }
+
+    if (claimsEl) {
+      if (claimsRes.status === "success" && Array.isArray(claimsRes.claims)) {
+        const pending = claimsRes.claims.filter(c => String(c.Status || "").toUpperCase() === "PENDING").length;
+        claimsEl.textContent = formatNumber(pending);
+        if (claimsLabelEl) {
+          claimsLabelEl.textContent = AppState.isAdmin ? "AWAITING ADMIN REVIEW" : "YOUR PENDING CLAIMS";
+        }
+      } else {
+        claimsEl.textContent = "0";
+      }
+    }
+
+    if (weaponRes.status === "success" && weaponRes.stockpile && weaponRes.weaponStats) {
+      let totalUnits = 0;
+      let totalAtk = 0;
+      let totalDef = 0;
+
+      Object.keys(weaponRes.weaponStats).forEach(weapon => {
+        const count = Number(weaponRes.stockpile[weapon]) || 0;
+        const stat = weaponRes.weaponStats[weapon] || {};
+        totalUnits += count;
+        totalAtk += count * (Number(stat.attack) || 0);
+        totalDef += count * (Number(stat.defence) || 0);
+      });
+
+      if (unitsEl) unitsEl.textContent = formatNumber(totalUnits);
+      if (attackEl) attackEl.textContent = formatNumber(totalAtk);
+      if (defenceEl) defenceEl.textContent = formatNumber(totalDef);
+
+      const combined = totalAtk + totalDef;
+      const strengthPercent = combined > 0
+        ? Math.min(100, Math.max(8, (totalAtk / Math.max(totalAtk, totalDef, 1)) * 100))
+        : 0;
+      if (powerBarEl) powerBarEl.style.width = `${strengthPercent}%`;
+    }
+
+    if (activityEl) {
+      if (txRes.status === "success" && Array.isArray(txRes.transactions) && txRes.transactions.length) {
+        const recent = [...txRes.transactions]
+          .sort((a, b) => String(b.Timestamp || "").localeCompare(String(a.Timestamp || "")))
+          .slice(0, 4);
+
+        activityEl.innerHTML = recent.map(tx => {
+          const amount = Number(tx.Amount) || 0;
+          const amountClass = amount >= 0 ? "positive" : "negative";
+          const sign = amount >= 0 ? "+" : "";
+          return `
+            <div class="dashboard-activity-item">
+              <div class="dashboard-activity-top">
+                <strong>${escapeHtml(tx.Type || "Transaction")}</strong>
+                <span class="dashboard-activity-amount ${amountClass}">${sign}${formatNumber(amount)} Gold</span>
+              </div>
+              <small class="dashboard-activity-meta">${escapeHtml(tx.Timestamp || "")} ${tx.Notes ? "• " + escapeHtml(tx.Notes) : ""}</small>
+            </div>
+          `;
+        }).join("");
+      } else {
+        activityEl.innerHTML = "<p class='empty-note'>No treasury activity yet.</p>";
+      }
+    }
+  } catch (err) {
+    if (goldEl) goldEl.textContent = "ERROR";
+    if (claimsEl) claimsEl.textContent = "ERROR";
+    if (activityEl) activityEl.innerHTML = `<p class='empty-note'>Error: ${escapeHtml(err.message)}</p>`;
+  }
+}
 
 async function loadStockpile() {
   const grid = document.getElementById("liveWeaponsGrid");

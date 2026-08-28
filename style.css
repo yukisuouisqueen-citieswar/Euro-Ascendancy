@@ -47,7 +47,20 @@ h1, h2, .brand { font-family: 'Archivo', sans-serif; }
 .navlink.signout:hover { color: var(--bad); }
 
 /* ---------- Landing ---------- */
-.landing { position: relative; min-height: calc(100vh - 61px); display: flex; align-items: flex-end; background: linear-gradient(135deg, #1a0a0e 0%, #0B0B0D 50%, #0d1117 100%); }
+.landing {
+    position: relative;
+    min-height: calc(100vh - 61px);
+    display: flex;
+    align-items: flex-end;
+    background:
+        linear-gradient(
+            0deg,
+            rgba(11,11,13,0.98) 0%,
+            rgba(11,11,13,0.62) 45%,
+            rgba(11,11,13,0.25) 100%
+        ),
+        url("flag.png") center center / cover no-repeat;
+}
 .landing-overlay { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(11,11,13,0.98) 0%, rgba(11,11,13,0.6) 45%, rgba(11,11,13,0.2) 100%); }
 .landing-content { position: relative; padding: 0 28px 56px; max-width: 640px; }
 .landing-content h1 { font-size: 3.2rem; font-weight: 800; line-height: 0.95; letter-spacing: -1px; margin: 0; text-shadow: 0 4px 20px rgba(0,0,0,0.5); }

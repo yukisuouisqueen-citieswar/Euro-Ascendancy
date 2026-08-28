@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Euro Ascendancy</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -82,35 +82,11 @@
                     <label for="loginUser">Username</label>
                     <select id="loginUser" required>
                         <option value="">— select your name —</option>
-                        <option value="kkoedb">kkoedb</option>
-                        <option value="Ant Rose">Ant Rose</option>
-                        <option value="The Notorious One">The Notorious One</option>
-                        <option value="lowly poly">lowly poly</option>
-                        <option value="pioneer9">pioneer9</option>
-                        <option value="Icyz">Icyz</option>
-                        <option value="vipeR.">vipeR.</option>
-                        <option value="TheOrthodoxone">TheOrthodoxone</option>
-                        <option value="Da0Y Khan">Da0Y Khan</option>
-                        <option value="AlbertRivera">AlbertRivera</option>
-                        <option value="Al Capone">Al Capone</option>
-                        <option value="ReedyTurnip">ReedyTurnip</option>
-                        <option value="kalikaka">kalikaka</option>
-                        <option value="JohnCox93">JohnCox93</option>
-                        <option value="WonderfulWand">WonderfulWand</option>
-                        <option value="Stonehatch">Stonehatch</option>
-                        <option value="Konan">Konan</option>
-                        <option value="Rhysand">Rhysand</option>
-                        <option value="Yuki Suou">Yuki Suou</option>
-                        <option value="Gaby0">Gaby0</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label for="loginPass">Password</label>
                     <input type="password" id="loginPass" placeholder="••••••••" required minlength="6">
-                </div>
-                <div class="form-group" id="confirmPasswordGroup" style="display:none;">
-                    <label for="confirmPassword">Confirm Password</label>
-                    <input type="password" id="confirmPassword" placeholder="••••••••" minlength="6">
                 </div>
                 <p class="hint" id="loginHint"></p>
                 <div class="btn-row">
@@ -139,29 +115,6 @@
                         <label for="weaponSelect">Weapon</label>
                         <select id="weaponSelect" required>
                             <option value="">— choose weapon —</option>
-                            <option value="ICBM">ICBM</option>
-                            <option value="BRBM">BRBM</option>
-                            <option value="SRBM">SRBM</option>
-                            <option value="MRBM">MRBM</option>
-                            <option value="IRBM">IRBM</option>
-                            <option value="GHOST">GHOST</option>
-                            <option value="M240">M240</option>
-                            <option value="M16 Rifle">M16 Rifle</option>
-                            <option value="Frigate">Frigate</option>
-                            <option value="Submarine">Submarine</option>
-                            <option value="SPG-9">SPG-9</option>
-                            <option value="2S25">2S25</option>
-                            <option value="Destroyer">Destroyer</option>
-                            <option value="BM-21">BM-21</option>
-                            <option value="T-90MS">T-90MS</option>
-                            <option value="Abrams M1A2">Abrams M1A2</option>
-                            <option value="Merkava">Merkava</option>
-                            <option value="Striker 40">Striker 40</option>
-                            <option value="Patrol Boat">Patrol Boat</option>
-                            <option value="M41-DK1">M41-DK1</option>
-                            <option value="Cruiser">Cruiser</option>
-                            <option value="Challenger 2">Challenger 2</option>
-                            <option value="F-22 Raptor">F-22 Raptor</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -211,26 +164,6 @@
                         <label for="transferTo">Send To</label>
                         <select id="transferTo" required>
                             <option value="">— choose recipient —</option>
-                            <option value="kkoedb">kkoedb</option>
-                            <option value="Ant Rose">Ant Rose</option>
-                            <option value="The Notorious One">The Notorious One</option>
-                            <option value="lowly poly">lowly poly</option>
-                            <option value="pioneer9">pioneer9</option>
-                            <option value="Icyz">Icyz</option>
-                            <option value="vipeR.">vipeR.</option>
-                            <option value="TheOrthodoxone">TheOrthodoxone</option>
-                            <option value="Da0Y Khan">Da0Y Khan</option>
-                            <option value="AlbertRivera">AlbertRivera</option>
-                            <option value="Al Capone">Al Capone</option>
-                            <option value="ReedyTurnip">ReedyTurnip</option>
-                            <option value="kalikaka">kalikaka</option>
-                            <option value="JohnCox93">JohnCox93</option>
-                            <option value="WonderfulWand">WonderfulWand</option>
-                            <option value="Stonehatch">Stonehatch</option>
-                            <option value="Konan">Konan</option>
-                            <option value="Rhysand">Rhysand</option>
-                            <option value="Yuki Suou">Yuki Suou</option>
-                            <option value="Gaby0">Gaby0</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -256,28 +189,23 @@
                             <option value="borderday">Border Day</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label for="troopsLostInput">Troops Lost</label>
+                    <div class="form-group" id="troopsGroup">
+                        <label for="troopsLostInput">Troops Lost / Amount</label>
                         <input type="number" id="troopsLostInput" min="0" placeholder="e.g. 150" required>
                     </div>
                     <div class="form-group">
-                        <label for="battleReportUpload">Battle Report</label>
-                        <div class="file-upload-container" id="fileUploadContainer">
-                            <input type="file" id="battleReportUpload" accept="image/*" style="display:none;">
-                            <div class="file-upload-area" id="fileUploadArea">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="32" height="32"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                                <p class="upload-text">Drag your screenshot here or <span class="upload-link">click to browse</span></p>
-                                <p class="upload-hint">PNG, JPG, or GIF (max 10MB)</p>
-                            </div>
-                            <div class="file-preview" id="filePreview" style="display:none;">
-                                <p class="file-name" id="fileName"></p>
-                                <button type="button" class="btn-remove" onclick="clearFileUpload()">Remove</button>
-                            </div>
-                        </div>
+                        <label for="claimNotesInput">Notes (optional)</label>
+                        <input type="text" id="claimNotesInput" placeholder="e.g. attacked by X">
                     </div>
                     <button type="submit" id="claimsSubmitBtn" class="btn btn-primary">SUBMIT CLAIM</button>
                 </form>
                 <p class="hint" id="claimsHint"></p>
+            </div>
+            <div class="card" id="myClaimsCard" style="display:none;">
+                <span class="card-label">My Claims</span>
+                <div id="myClaimsList">
+                    <p class="empty-note">Loading...</p>
+                </div>
             </div>
         </section>
 
@@ -290,41 +218,29 @@
 
         <section class="pane" id="adminPane" style="display:none;">
             <h2>Admin</h2>
+            
+            <div class="card">
+                <span class="card-label">Pending Claims</span>
+                <div id="pendingClaimsList">
+                    <p class="empty-note">Loading...</p>
+                </div>
+            </div>
+
             <div class="card">
                 <span class="card-label">Disable / Re-enable Account</span>
-                <form id="adminForm">
+                <form id="adminDisableForm">
                     <div class="form-group">
                         <label for="adminTargetUser">Player</label>
                         <select id="adminTargetUser" required>
                             <option value="">— choose account —</option>
-                            <option value="kkoedb">kkoedb</option>
-                            <option value="Ant Rose">Ant Rose</option>
-                            <option value="The Notorious One">The Notorious One</option>
-                            <option value="lowly poly">lowly poly</option>
-                            <option value="pioneer9">pioneer9</option>
-                            <option value="Icyz">Icyz</option>
-                            <option value="vipeR.">vipeR.</option>
-                            <option value="TheOrthodoxone">TheOrthodoxone</option>
-                            <option value="Da0Y Khan">Da0Y Khan</option>
-                            <option value="AlbertRivera">AlbertRivera</option>
-                            <option value="Al Capone">Al Capone</option>
-                            <option value="ReedyTurnip">ReedyTurnip</option>
-                            <option value="kalikaka">kalikaka</option>
-                            <option value="JohnCox93">JohnCox93</option>
-                            <option value="WonderfulWand">WonderfulWand</option>
-                            <option value="Stonehatch">Stonehatch</option>
-                            <option value="Konan">Konan</option>
-                            <option value="Rhysand">Rhysand</option>
-                            <option value="Yuki Suou">Yuki Suou</option>
-                            <option value="Gaby0">Gaby0</option>
                         </select>
                     </div>
                     <div class="btn-row">
-                        <button type="submit" data-mode="disable" class="btn btn-primary">DISABLE</button>
-                        <button type="submit" data-mode="enable" class="btn btn-outline">RE-ENABLE</button>
+                        <button type="button" onclick="handleDisableEnable('disable')" class="btn btn-primary">DISABLE</button>
+                        <button type="button" onclick="handleDisableEnable('enable')" class="btn btn-outline">RE-ENABLE</button>
                     </div>
                 </form>
-                <p class="hint" id="adminHint"></p>
+                <p class="hint" id="adminDisableHint"></p>
             </div>
 
             <div class="card">
@@ -334,26 +250,6 @@
                         <label for="overrideTargetUser">Player</label>
                         <select id="overrideTargetUser" required>
                             <option value="">— choose account —</option>
-                            <option value="kkoedb">kkoedb</option>
-                            <option value="Ant Rose">Ant Rose</option>
-                            <option value="The Notorious One">The Notorious One</option>
-                            <option value="lowly poly">lowly poly</option>
-                            <option value="pioneer9">pioneer9</option>
-                            <option value="Icyz">Icyz</option>
-                            <option value="vipeR.">vipeR.</option>
-                            <option value="TheOrthodoxone">TheOrthodoxone</option>
-                            <option value="Da0Y Khan">Da0Y Khan</option>
-                            <option value="AlbertRivera">AlbertRivera</option>
-                            <option value="Al Capone">Al Capone</option>
-                            <option value="ReedyTurnip">ReedyTurnip</option>
-                            <option value="kalikaka">kalikaka</option>
-                            <option value="JohnCox93">JohnCox93</option>
-                            <option value="WonderfulWand">WonderfulWand</option>
-                            <option value="Stonehatch">Stonehatch</option>
-                            <option value="Konan">Konan</option>
-                            <option value="Rhysand">Rhysand</option>
-                            <option value="Yuki Suou">Yuki Suou</option>
-                            <option value="Gaby0">Gaby0</option>
                         </select>
                     </div>
                     <div class="form-group">

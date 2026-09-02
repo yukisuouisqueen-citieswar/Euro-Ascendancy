@@ -76,10 +76,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function populateSelects() {
   // Player selects
-  const playerSelects = ["loginUser", "transferTo", "adminTargetUser", "overrideTargetUser"];
+  const playerSelects = [
+    "loginUser",
+    "transferTo",
+    "adminTargetUser",
+    "overrideTargetUser"
+  ];
+
   playerSelects.forEach(id => {
     const sel = document.getElementById(id);
     if (!sel) return;
+
     PLAYERS.forEach(p => {
       const opt = document.createElement("option");
       opt.value = p;
@@ -87,6 +94,26 @@ function populateSelects() {
       sel.appendChild(opt);
     });
   });
+  function populateWeaponSelect(weapons) {
+  const weaponSel = document.getElementById("weaponSelect");
+  if (!weaponSel) return;
+
+  weaponSel.innerHTML = `
+    <option value="">— choose weapon —</option>
+  `;
+
+  weapons.forEach(weapon => {
+    const opt = document.createElement("option");
+    opt.value = weapon;
+    opt.textContent = weapon;
+    weaponSel.appendChild(opt);
+  });
+}
+
+  
+  // Weapon list starts with the local fallback.
+  populateWeaponSelect(WEAPONS);
+}
 
   // Weapon select
   const weaponSel = document.getElementById("weaponSelect");

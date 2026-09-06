@@ -297,53 +297,135 @@
             </div>
         </section>
 
-        <section class="pane" id="adminPane" style="display:none;">
-            <h2>Admin</h2>
-            
-            <div class="card">
-                <span class="card-label">Pending Claims</span>
-                <div id="pendingClaimsList">
-                    <p class="empty-note">Loading...</p>
+        <section class="pane admin-pane" id="adminPane" style="display:none;">
+            <div class="admin-header">
+                <div>
+                    <span class="dashboard-kicker">EURO ASCENDANCY // CONTROL</span>
+                    <h2>Admin Command Centre</h2>
+                    <p class="admin-sub">Manage members, claims, treasury and military data without opening the spreadsheet.</p>
                 </div>
+                <button class="btn btn-outline admin-refresh" type="button" onclick="loadAdminData()">REFRESH</button>
             </div>
 
-            <div class="card">
-                <span class="card-label">Disable / Re-enable Account</span>
-                <form id="adminDisableForm">
-                    <div class="form-group">
-                        <label for="adminTargetUser">Player</label>
-                        <select id="adminTargetUser" required>
-                            <option value="">— choose account —</option>
-                        </select>
-                    </div>
-                    <div class="btn-row">
-                        <button type="button" onclick="handleDisableEnable('disable')" class="btn btn-primary">DISABLE</button>
-                        <button type="button" onclick="handleDisableEnable('enable')" class="btn btn-outline">RE-ENABLE</button>
-                    </div>
-                </form>
-                <p class="hint" id="adminDisableHint"></p>
+            <div class="admin-overview-grid">
+                <div class="card admin-kpi"><span class="card-label">Members</span><strong id="adminTotalMembers">—</strong><small>REGISTERED ACCOUNTS</small></div>
+                <div class="card admin-kpi"><span class="card-label">Pending Claims</span><strong id="adminPendingCount">—</strong><small>AWAITING REVIEW</small></div>
+                <div class="card admin-kpi"><span class="card-label">Economy</span><strong id="adminTotalGold">—</strong><small>TOTAL PLAYER GOLD</small></div>
+                <div class="card admin-kpi"><span class="card-label">Military</span><strong id="adminTotalUnits">—</strong><small>TOTAL UNITS</small></div>
             </div>
 
-            <div class="card">
-                <span class="card-label">Manual Gold Override</span>
-                <form id="overrideForm">
-                    <div class="form-group">
-                        <label for="overrideTargetUser">Player</label>
-                        <select id="overrideTargetUser" required>
-                            <option value="">— choose account —</option>
-                        </select>
+            <div class="admin-layout">
+                <div class="admin-main-column">
+                    <div class="card">
+                        <div class="dashboard-section-head">
+                            <div>
+                                <span class="card-label">Member Directory</span>
+                                <h3>Alliance accounts</h3>
+                            </div>
+                            <span class="dashboard-live-pill">LIVE</span>
+                        </div>
+                        <div class="admin-toolbar">
+                            <input id="adminMemberSearch" type="search" placeholder="Search player..." autocomplete="off">
+                            <select id="adminMemberFilter">
+                                <option value="all">All members</option>
+                                <option value="admins">Admins</option>
+                                <option value="disabled">Disabled</option>
+                                <option value="active">Active</option>
+                            </select>
+                        </div>
+                        <div id="adminMemberList" class="admin-member-list">
+                            <p class="empty-note">Loading members...</p>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="overrideAmount">Amount (negative to deduct)</label>
-                        <input type="number" id="overrideAmount" placeholder="e.g. -5000 or 5000" required>
+
+                    <div class="card" id="adminSelectedPlayerCard" style="display:none;">
+                        <div class="dashboard-section-head">
+                            <div>
+                                <span class="card-label">Player Detail</span>
+                                <h3 id="adminSelectedPlayerName">—</h3>
+                            </div>
+                            <button class="dashboard-link" type="button" onclick="closeAdminPlayer()">CLOSE</button>
+                        </div>
+                        <div id="adminSelectedPlayerContent"></div>
                     </div>
-                    <div class="form-group">
-                        <label for="overrideNotes">Reason</label>
-                        <input type="text" id="overrideNotes" placeholder="e.g. correcting duplicate claim">
+
+                    <div class="card">
+                        <div class="dashboard-section-head">
+                            <div>
+                                <span class="card-label">Pending Claims</span>
+                                <h3>Review queue</h3>
+                            </div>
+                        </div>
+                        <div id="pendingClaimsList">
+                            <p class="empty-note">Loading...</p>
+                        </div>
                     </div>
-                    <button type="submit" id="overrideBtn" class="btn btn-primary">APPLY</button>
-                </form>
-                <p class="hint" id="overrideHint"></p>
+
+                    <div class="card">
+                        <div class="dashboard-section-head">
+                            <div>
+                                <span class="card-label">Claim History</span>
+                                <h3>Recently processed</h3>
+                            </div>
+                        </div>
+                        <div id="adminClaimHistoryList">
+                            <p class="empty-note">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-side-column">
+                    <div class="card">
+                        <span class="card-label">Account Control</span>
+                        <form id="adminDisableForm">
+                            <div class="form-group">
+                                <label for="adminTargetUser">Player</label>
+                                <select id="adminTargetUser" required>
+                                    <option value="">— choose account —</option>
+                                </select>
+                            </div>
+                            <div class="btn-row">
+                                <button type="button" onclick="handleDisableEnable('disable')" class="btn btn-primary">DISABLE</button>
+                                <button type="button" onclick="handleDisableEnable('enable')" class="btn btn-outline">RE-ENABLE</button>
+                            </div>
+                        </form>
+                        <p class="hint" id="adminDisableHint"></p>
+                    </div>
+
+                    <div class="card">
+                        <span class="card-label">Manual Gold Override</span>
+                        <form id="overrideForm">
+                            <div class="form-group">
+                                <label for="overrideTargetUser">Player</label>
+                                <select id="overrideTargetUser" required>
+                                    <option value="">— choose account —</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="overrideAmount">Amount (negative to deduct)</label>
+                                <input type="number" id="overrideAmount" placeholder="e.g. -5000 or 5000" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="overrideNotes">Reason</label>
+                                <input type="text" id="overrideNotes" placeholder="e.g. correcting duplicate claim">
+                            </div>
+                            <button type="submit" id="overrideBtn" class="btn btn-primary">APPLY</button>
+                        </form>
+                        <p class="hint" id="overrideHint"></p>
+                    </div>
+
+                    <div class="card">
+                        <div class="dashboard-section-head">
+                            <div>
+                                <span class="card-label">Admin Audit</span>
+                                <h3>Recent actions</h3>
+                            </div>
+                        </div>
+                        <div id="adminAuditList">
+                            <p class="empty-note">Loading...</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 

@@ -23,7 +23,6 @@
         </div>
     </nav>
 
-    <!-- Mobile bottom tab bar -->
     <nav class="mobile-tabbar" id="mobileTabbar" style="display:none;">
         <button class="tab-item active" data-pane="stockpilePane">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
@@ -51,7 +50,6 @@
         </button>
     </nav>
 
-    <!-- ===== LANDING ===== -->
     <section class="landing" id="landing">
         <div class="landing-overlay"></div>
         <div class="landing-content">
@@ -72,7 +70,6 @@
         </div>
     </section>
 
-    <!-- ===== LOGIN GATE ===== -->
     <section class="hero" id="loginWrapper" style="display:none;">
         <div class="hero-inner">
             <h1>ALLIANCE<br>COMMAND</h1>
@@ -94,11 +91,11 @@
                     <button type="submit" id="loginBtn" class="btn btn-primary">ACCESS DATABASE</button>
                 </div>
             </form>
+
             <p class="footnote">First time? Enter your name and any password — that becomes your account.</p>
         </div>
     </section>
 
-    <!-- ===== WORKSPACE ===== -->
     <main id="appWorkspace" style="display:none;">
 
         <section class="pane dashboard-pane" id="dashboardPane">
@@ -145,6 +142,7 @@
                     </div>
                     <span class="dashboard-live-pill">LIVE</span>
                 </div>
+
                 <div class="dashboard-metrics">
                     <div>
                         <strong id="dashboardUnits">—</strong>
@@ -159,6 +157,7 @@
                         <span>DEFENCE</span>
                     </div>
                 </div>
+
                 <div class="dashboard-bar"><span id="dashboardPowerBar"></span></div>
             </div>
 
@@ -170,6 +169,7 @@
                     </div>
                     <button class="dashboard-link" type="button" onclick="switchPane('historyPane')">VIEW HISTORY</button>
                 </div>
+
                 <div id="dashboardActivity">
                     <p class="empty-note">Loading activity...</p>
                 </div>
@@ -183,12 +183,14 @@
 
         <section class="pane" id="stockpilePane">
             <h2>Stockpile</h2>
+
             <div class="card">
                 <span class="card-label">Live Inventory</span>
                 <div id="liveWeaponsGrid" class="weapons-grid">
                     <p class="empty-note">Loading...</p>
                 </div>
             </div>
+
             <div class="card">
                 <span class="card-label">Update a Count</span>
                 <form id="trackerForm">
@@ -198,10 +200,12 @@
                             <option value="">— choose weapon —</option>
                         </select>
                     </div>
+
                     <div class="form-group">
                         <label for="quantityInput">Current Count</label>
                         <input type="number" id="quantityInput" min="0" placeholder="e.g. 500" required>
                     </div>
+
                     <button type="submit" id="submitBtn" class="btn btn-primary">SAVE COUNT</button>
                 </form>
             </div>
@@ -217,6 +221,7 @@
 
             <div class="card">
                 <span class="card-label">Claim Payout</span>
+
                 <form id="claimForm">
                     <div class="form-group">
                         <label for="claimType">Type</label>
@@ -226,20 +231,24 @@
                             <option value="borderday">Border Days — 10,000g each</option>
                         </select>
                     </div>
+
                     <div class="form-group">
                         <label for="claimAmount">Amount</label>
                         <input type="number" id="claimAmount" min="1" placeholder="e.g. 10" required>
                     </div>
+
                     <div class="form-group">
                         <label for="claimNotes">Notes (optional)</label>
                         <input type="text" id="claimNotes" placeholder="e.g. attacked by X">
                     </div>
+
                     <button type="submit" id="claimBtn" class="btn btn-primary">CLAIM</button>
                 </form>
             </div>
 
             <div class="card">
                 <span class="card-label">Transfer Gold</span>
+
                 <form id="transferForm">
                     <div class="form-group">
                         <label for="transferTo">Send To</label>
@@ -247,10 +256,12 @@
                             <option value="">— choose recipient —</option>
                         </select>
                     </div>
+
                     <div class="form-group">
                         <label for="transferAmount">Amount</label>
                         <input type="number" id="transferAmount" min="1" placeholder="e.g. 5000" required>
                     </div>
+
                     <button type="submit" id="transferBtn" class="btn btn-outline">SEND</button>
                 </form>
             </div>
@@ -258,8 +269,10 @@
 
         <section class="pane" id="claimsPane" style="display:none;">
             <h2>Claims</h2>
+
             <div class="card">
                 <span class="card-label">Submit a Claim</span>
+
                 <form id="claimsForm">
                     <div class="form-group">
                         <label for="claimTypeSelect">Claim Type</label>
@@ -270,18 +283,23 @@
                             <option value="borderday">Border Day</option>
                         </select>
                     </div>
+
                     <div class="form-group" id="troopsGroup">
                         <label for="troopsLostInput">Troops Lost / Amount</label>
                         <input type="number" id="troopsLostInput" min="0" placeholder="e.g. 150" required>
                     </div>
+
                     <div class="form-group">
                         <label for="claimNotesInput">Notes (optional)</label>
                         <input type="text" id="claimNotesInput" placeholder="e.g. attacked by X">
                     </div>
+
                     <button type="submit" id="claimsSubmitBtn" class="btn btn-primary">SUBMIT CLAIM</button>
                 </form>
+
                 <p class="hint" id="claimsHint"></p>
             </div>
+
             <div class="card" id="myClaimsCard" style="display:none;">
                 <span class="card-label">My Claims</span>
                 <div id="myClaimsList">
@@ -292,8 +310,11 @@
 
         <section class="pane" id="historyPane" style="display:none;">
             <h2>History</h2>
+
             <div class="card">
-                <div id="historyList"><p class="empty-note">Loading...</p></div>
+                <div id="historyList">
+                    <p class="empty-note">Loading...</p>
+                </div>
             </div>
         </section>
 
@@ -304,18 +325,40 @@
                     <h2>Admin Command Centre</h2>
                     <p class="admin-sub">Manage members, claims, treasury and military data without opening the spreadsheet.</p>
                 </div>
+
                 <button class="btn btn-outline admin-refresh" type="button" onclick="loadAdminData()">REFRESH</button>
             </div>
 
             <div class="admin-overview-grid">
-                <div class="card admin-kpi"><span class="card-label">Members</span><strong id="adminTotalMembers">—</strong><small>REGISTERED ACCOUNTS</small></div>
-                <div class="card admin-kpi"><span class="card-label">Pending Claims</span><strong id="adminPendingCount">—</strong><small>AWAITING REVIEW</small></div>
-                <div class="card admin-kpi"><span class="card-label">Economy</span><strong id="adminTotalGold">—</strong><small>TOTAL PLAYER GOLD</small></div>
-                <div class="card admin-kpi"><span class="card-label">Military</span><strong id="adminTotalUnits">—</strong><small>TOTAL UNITS</small></div>
+                <div class="card admin-kpi">
+                    <span class="card-label">Members</span>
+                    <strong id="adminTotalMembers">—</strong>
+                    <small>REGISTERED ACCOUNTS</small>
+                </div>
+
+                <div class="card admin-kpi">
+                    <span class="card-label">Pending Claims</span>
+                    <strong id="adminPendingCount">—</strong>
+                    <small>AWAITING REVIEW</small>
+                </div>
+
+                <div class="card admin-kpi">
+                    <span class="card-label">Economy</span>
+                    <strong id="adminTotalGold">—</strong>
+                    <small>TOTAL PLAYER GOLD</small>
+                </div>
+
+                <div class="card admin-kpi">
+                    <span class="card-label">Military</span>
+                    <strong id="adminTotalUnits">—</strong>
+                    <small>TOTAL UNITS</small>
+                </div>
             </div>
 
             <div class="admin-layout">
+
                 <div class="admin-main-column">
+
                     <div class="card">
                         <div class="dashboard-section-head">
                             <div>
@@ -324,8 +367,10 @@
                             </div>
                             <span class="dashboard-live-pill">LIVE</span>
                         </div>
+
                         <div class="admin-toolbar">
                             <input id="adminMemberSearch" type="search" placeholder="Search player..." autocomplete="off">
+
                             <select id="adminMemberFilter">
                                 <option value="all">All members</option>
                                 <option value="admins">Admins</option>
@@ -333,6 +378,7 @@
                                 <option value="active">Active</option>
                             </select>
                         </div>
+
                         <div id="adminMemberList" class="admin-member-list">
                             <p class="empty-note">Loading members...</p>
                         </div>
@@ -344,8 +390,10 @@
                                 <span class="card-label">Player Detail</span>
                                 <h3 id="adminSelectedPlayerName">—</h3>
                             </div>
+
                             <button class="dashboard-link" type="button" onclick="closeAdminPlayer()">CLOSE</button>
                         </div>
+
                         <div id="adminSelectedPlayerContent"></div>
                     </div>
 
@@ -356,6 +404,7 @@
                                 <h3>Review queue</h3>
                             </div>
                         </div>
+
                         <div id="pendingClaimsList">
                             <p class="empty-note">Loading...</p>
                         </div>
@@ -368,49 +417,62 @@
                                 <h3>Recently processed</h3>
                             </div>
                         </div>
+
                         <div id="adminClaimHistoryList">
                             <p class="empty-note">Loading...</p>
                         </div>
                     </div>
+
                 </div>
 
                 <div class="admin-side-column">
+
                     <div class="card">
                         <span class="card-label">Account Control</span>
+
                         <form id="adminDisableForm">
                             <div class="form-group">
                                 <label for="adminTargetUser">Player</label>
+
                                 <select id="adminTargetUser" required>
                                     <option value="">— choose account —</option>
                                 </select>
                             </div>
+
                             <div class="btn-row">
                                 <button type="button" onclick="handleDisableEnable('disable')" class="btn btn-primary">DISABLE</button>
                                 <button type="button" onclick="handleDisableEnable('enable')" class="btn btn-outline">RE-ENABLE</button>
                             </div>
                         </form>
+
                         <p class="hint" id="adminDisableHint"></p>
                     </div>
 
                     <div class="card">
                         <span class="card-label">Manual Gold Override</span>
+
                         <form id="overrideForm">
                             <div class="form-group">
                                 <label for="overrideTargetUser">Player</label>
+
                                 <select id="overrideTargetUser" required>
                                     <option value="">— choose account —</option>
                                 </select>
                             </div>
+
                             <div class="form-group">
                                 <label for="overrideAmount">Amount (negative to deduct)</label>
                                 <input type="number" id="overrideAmount" placeholder="e.g. -5000 or 5000" required>
                             </div>
+
                             <div class="form-group">
                                 <label for="overrideNotes">Reason</label>
                                 <input type="text" id="overrideNotes" placeholder="e.g. correcting duplicate claim">
                             </div>
+
                             <button type="submit" id="overrideBtn" class="btn btn-primary">APPLY</button>
                         </form>
+
                         <p class="hint" id="overrideHint"></p>
                     </div>
 
@@ -421,11 +483,14 @@
                                 <h3>Recent actions</h3>
                             </div>
                         </div>
+
                         <div id="adminAuditList">
                             <p class="empty-note">Loading...</p>
                         </div>
                     </div>
+
                 </div>
+
             </div>
         </section>
 
@@ -433,5 +498,6 @@
 
     <script src="api.js"></script>
     <script src="app.js"></script>
+
 </body>
 </html>

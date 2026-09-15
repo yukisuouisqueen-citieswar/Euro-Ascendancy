@@ -1,1773 +1,2748 @@
-/**
- * app.js
- * Frontend controller strictly matching index.html IDs and DOM structure
- */
+/* ============================================================
+   EURO ASCENDANCY — APP.JS
+   Main frontend application logic
+   ============================================================ */
 
-// ===== PLAYER DATA =====
-const PLAYERS = [
-  "kkoedb", "Ant Rose", "The Notorious One", "lowly poly", "pioneer9",
-  "Icyz", "vipeR.", "TheOrthodoxone", "Da0Y Khan", "AlbertRivera",
-  "Al Capone", "ReedyTurnip", "kalikaka", "JohnCox93", "WonderfulWand",
-  "Stonehatch", "Konan", "Rhysand", "Yuki Suou", "Gaby0"
-];
-
-// Local fallback only. The live weapon list is loaded from Weapon Stats
-// through getWeapons() once a user is authenticated.
-const WEAPONS = [
-  "ICBM", "BRBM", "SRBM", "MRBM", "IRBM", "GHOST", "M240", "M16 Rifle",
-  "Frigate", "Submarine", "SPG-9", "2S25", "Destroyer", "BM-21", "T-90MS",
-  "Abrams M1A2", "Merkava", "Striker 40", "Patrol Boat", "M41-DK1",
-  "Cruiser", "Challenger 2", "F-22 Raptor",
-  "HK21", "M777", "M109", "Rafale F4", "Su-35 Flanker-E",
-  "E-3 Sentry", "B-2 Spirit"
-];
-
-// ===== STATE =====
 const AppState = {
-  user: null,
-  password: null,
-  isAdmin: false,
+    user: "",
+    password: "",
+    isAdmin: false,
+    weaponCatalog: [],
 
-  setSession(user, password, isAdmin) {
-    this.user = user;
-    this.password = password;
-    this.isAdmin = Boolean(isAdmin);
+    setSession(user, password, isAdmin) {
+        this.user = user;
+        this.password = password;
+        this.isAdmin = !!isAdmin;
 
-    sessionStorage.setItem("ea_user", user);
-    sessionStorage.setItem("ea_password", password);
-    sessionStorage.setItem("ea_isAdmin", String(this.isAdmin));
-  },
+        sessionStorage.setItem("ea_user", user);
+        sessionStorage.setItem("ea_password", password);
+        sessionStorage.setItem(
+            "ea_isAdmin",
+            this.isAdmin ? "true" : "false"
+        );
+    },
 
-  clearSession() {
-    this.user = null;
-    this.password = null;
-    this.isAdmin = false;
+    restoreSession() {
+        this.user = sessionStorage.getItem("ea_user") || "";
+        this.password = sessionStorage.getItem("ea_password") || "";
+        this.isAdmin =
+            sessionStorage.getItem("ea_isAdmin") === "true";
+    },
 
-    sessionStorage.removeItem("ea_user");
-    sessionStorage.removeItem("ea_password");
-    sessionStorage.removeItem("ea_isAdmin");
-  },
+    clearSession() {
+        this.user = "";
+        this.password = "";
+        this.isAdmin = false;
 
-  isLoggedIn() {
-    if (!this.user || !this.password) {
-      const savedUser = sessionStorage.getItem("ea_user");
-      const savedPass = sessionStorage.getItem("ea_password");
-      const savedAdmin =
-        sessionStorage.getItem("ea_isAdmin") === "true";
+        sessionStorage.removeItem("ea_user");
+        sessionStorage.removeItem("ea_password");
+        sessionStorage.removeItem("ea_isAdmin");
+    },
 
-      if (savedUser && savedPass) {
-        this.user = savedUser;
-        this.password = savedPass;
-        this.isAdmin = savedAdmin;
-        return true;
-      }
-
-      return false;
+    isLoggedIn() {
+        return !!this.user && !!this.password;
     }
-
-    return true;
-  }
 };
 
-// ===== INIT =====
-document.addEventListener("DOMContentLoaded", () => {
-  populateSelects();
-  setupNavigation();
-  setupForms();
-  checkMobile();
-  window.addEventListener("resize", checkMobile);
 
-  if (AppState.isLoggedIn()) {
-    showWorkspace();
-  } else {
-    showLanding();
-  }
-});
+/* ============================================================
+   FALLBACK WEAPON LIST
+   ============================================================ */
 
-function populateSelects() {
-  const playerSelects = [
-    "loginUser",
-    "transferTo",
-    "adminTargetUser",
-    "overrideTargetUser"
-  ];
+const WEAPONS = [
+    "ICBM",
+    "BRBM",
+    "SRBM",
+    "MRBM",
+    "IRBM",
+    "GHOST",
+    "M240",
+    "M16 Rifle",
+    "Frigate",
+    "Submarine",
+    "SPG-9",
+    "2S25",
+    "Destroyer",
+    "BM-21",
+    "T-90MS",
+    "Abrams M1A2",
+    "Merkava",
+    "Striker 40",
+    "Patrol Boat",
+    "M41-DK1",
+    "Cruiser",
+    "Challenger 2",
+    "F-22 Raptor",
 
-  playerSelects.forEach(id => {
-    const sel = document.getElementById(id);
-    if (!sel) return;
+    // New weapons
+    "HK21",
+    "M777",
+    "M109",
+    "Rafale F4",
+    "Su-35 Flanker-E",
+    "E-3 Sentry",
+    "B-2 Spirit"
+];
 
-    PLAYERS.forEach(player => {
-      const opt = document.createElement("option");
-      opt.value = player;
-      opt.textContent = player;
-      sel.appendChild(opt);
-    });
-  });
 
-  populateWeaponSelect(WEAPONS);
+/* ============================================================
+   PLAYER LIST
+   ============================================================ */
+
+const PLAYERS = [
+    "kkoedb",
+    "Ant Rose",
+    "The Notorious One",
+    "lowly poly",
+    "pioneer9",
+    "Icyz",
+    "vipeR.",
+    "TheOrthodoxone",
+    "Da0Y Khan",
+    "AlbertRivera",
+    "Al Capone",
+    "ReedyTurnip",
+    "kalikaka",
+    "JohnCox93",
+    "WonderfulWand",
+    "Stonehatch",
+    "Konan",
+    "Rhysand",
+    "Yuki Suou",
+    "Gaby0"
+];
+
+
+/* ============================================================
+   DOM HELPERS
+   ============================================================ */
+
+function $(id) {
+    return document.getElementById(id);
 }
 
-function populateWeaponSelect(weapons) {
-  const weaponSel = document.getElementById("weaponSelect");
-  if (!weaponSel) return;
+function show(id) {
+    const el = $(id);
 
-  const uniqueWeapons = [...new Set(
-    (Array.isArray(weapons) ? weapons : [])
-      .map(w => String(w || "").trim())
-      .filter(Boolean)
-  )];
-
-  weaponSel.innerHTML = `
-    <option value="">— choose weapon —</option>
-  `;
-
-  uniqueWeapons.forEach(weapon => {
-    const opt = document.createElement("option");
-    opt.value = weapon;
-    opt.textContent = weapon;
-    weaponSel.appendChild(opt);
-  });
+    if (el) {
+        el.style.display = "";
+    }
 }
 
-function checkMobile() {
-  const isMobile = window.innerWidth <= 768;
-  document.body.classList.toggle("is-mobile", isMobile);
+function hide(id) {
+    const el = $(id);
+
+    if (el) {
+        el.style.display = "none";
+    }
 }
 
-// ===== NAVIGATION & UI PANES =====
-
-function setupNavigation() {
-  const navButtons = document.querySelectorAll("[data-pane]");
-
-  navButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      const paneId = btn.getAttribute("data-pane");
-      if (paneId) switchPane(paneId);
-    });
-  });
-}
-
-function switchPane(paneId) {
-  document.querySelectorAll(".pane").forEach(pane => {
-    pane.style.display = "none";
-  });
-
-  document.querySelectorAll(".tab-item").forEach(tab => {
-    tab.classList.remove("active");
-  });
-
-  document.querySelectorAll(".navlink").forEach(nav => {
-    nav.classList.remove("active");
-  });
-
-  const targetPane = document.getElementById(paneId);
-  if (targetPane) targetPane.style.display = "block";
-
-  document.querySelectorAll(`[data-pane="${paneId}"]`).forEach(el => {
-    el.classList.add("active");
-  });
-
-  if (paneId === "dashboardPane") loadDashboard();
-  if (paneId === "stockpilePane") loadStockpile();
-  if (paneId === "bankPane") loadBank();
-  if (paneId === "historyPane") loadHistory();
-  if (paneId === "claimsPane") loadMyClaims();
-  if (paneId === "adminPane") loadAdminData();
-}
-
-function showLanding() {
-  document.getElementById("landing").style.display = "flex";
-  document.getElementById("about").style.display = "block";
-  document.getElementById("loginWrapper").style.display = "none";
-  document.getElementById("appWorkspace").style.display = "none";
-  document.getElementById("navLinks").style.display = "none";
-  document.getElementById("mobileTabbar").style.display = "none";
-}
-
-function showLogin() {
-  document.getElementById("landing").style.display = "none";
-  document.getElementById("about").style.display = "none";
-  document.getElementById("loginWrapper").style.display = "flex";
-  document.getElementById("appWorkspace").style.display = "none";
-}
-
-function showWorkspace() {
-  document.getElementById("landing").style.display = "none";
-  document.getElementById("about").style.display = "none";
-  document.getElementById("loginWrapper").style.display = "none";
-  document.getElementById("appWorkspace").style.display = "block";
-
-  document.getElementById("navLinks").style.display = "flex";
-  document.getElementById("mobileTabbar").style.display = "flex";
-
-  const adminNav = document.getElementById("adminNavLink");
-  const mobileAdmin = document.getElementById("mobileAdminTab");
-
-  if (AppState.isAdmin) {
-    if (adminNav) adminNav.style.display = "inline-block";
-    if (mobileAdmin) mobileAdmin.style.display = "flex";
-  } else {
-    if (adminNav) adminNav.style.display = "none";
-    if (mobileAdmin) mobileAdmin.style.display = "none";
-  }
-
-  loadWeaponCatalog();
-  switchPane("dashboardPane");
-}
-
-function logout() {
-  AppState.clearSession();
-  showLanding();
-}
-
-// ===== FORM HANDLERS =====
-
-function setupForms() {
-  // Login
-  const loginForm = document.getElementById("loginForm");
-
-  if (loginForm) {
-    loginForm.addEventListener("submit", async e => {
-      e.preventDefault();
-
-      const user = document.getElementById("loginUser").value;
-      const pass = document.getElementById("loginPass").value;
-      const hint = document.getElementById("loginHint");
-
-      if (!user) {
-        hint.textContent = "Please select your name.";
-        return;
-      }
-
-      if (!pass || pass.length < 6) {
-        hint.textContent =
-          "Password must be at least 6 characters.";
-        return;
-      }
-
-      hint.textContent = "Authenticating...";
-
-      try {
-        const res = await API.login(user, pass);
-
-        if (res.status === "success") {
-          AppState.setSession(
-            res.player,
-            pass,
-            res.isAdmin
-          );
-
-          hint.textContent = "";
-          showWorkspace();
-        } else {
-          hint.textContent =
-            res.error || "Login failed.";
-        }
-      } catch (err) {
-        hint.textContent = "Error: " + err.message;
-      }
-    });
-  }
-
-  // Weapon Count
-  const trackerForm = document.getElementById("trackerForm");
-
-  if (trackerForm) {
-    trackerForm.addEventListener("submit", async e => {
-      e.preventDefault();
-
-      const weapon =
-        document.getElementById("weaponSelect").value;
-
-      const quantity = parseInt(
-        document.getElementById("quantityInput").value,
-        10
-      );
-
-      if (!weapon) {
-        alert("Please select a weapon.");
-        return;
-      }
-
-      if (!Number.isFinite(quantity) || quantity < 0) {
-        alert(
-          "Please enter a valid non-negative quantity."
-        );
-        return;
-      }
-
-      try {
-        const res = await API.updateWeapon(
-          AppState.user,
-          AppState.password,
-          weapon,
-          quantity
-        );
-
-        if (res.status === "success") {
-          alert(
-            `Stockpile updated: ${weapon} set to ${quantity}`
-          );
-
-          trackerForm.reset();
-          await loadStockpile();
-          await loadDashboard();
-        } else {
-          alert(
-            res.error ||
-            "Failed to update stockpile."
-          );
-        }
-      } catch (err) {
-        alert(err.message);
-      }
-    });
-  }
-
-  // Transfer
-  const transferForm =
-    document.getElementById("transferForm");
-
-  if (transferForm) {
-    transferForm.addEventListener("submit", async e => {
-      e.preventDefault();
-
-      const toPlayer =
-        document.getElementById("transferTo").value;
-
-      const amount = parseFloat(
-        document.getElementById("transferAmount").value
-      );
-
-      if (!toPlayer) {
-        alert("Please select a recipient.");
-        return;
-      }
-
-      if (!Number.isFinite(amount) || amount <= 0) {
-        alert("Please enter a valid amount.");
-        return;
-      }
-
-      try {
-        const res = await API.transfer(
-          AppState.user,
-          AppState.password,
-          toPlayer,
-          amount
-        );
-
-        if (res.status === "success") {
-          alert(res.message);
-          transferForm.reset();
-
-          await loadBank();
-          await loadDashboard();
-        } else {
-          alert(res.error || "Transfer failed.");
-        }
-      } catch (err) {
-        alert(err.message);
-      }
-    });
-  }
-
-  setupClaimTypeUI();
-
-  // Bank Claim Form
-  const claimForm =
-    document.getElementById("claimForm");
-
-  if (claimForm) {
-    claimForm.addEventListener("submit", async e => {
-      e.preventDefault();
-
-      const type =
-        document.getElementById("claimType").value;
-
-      const amount = parseInt(
-        document.getElementById("claimAmount").value,
-        10
-      );
-
-      const notes =
-        document.getElementById("claimNotes").value;
-
-      if (!Number.isFinite(amount) || amount <= 0) {
-        alert("Please enter a valid amount.");
-        return;
-      }
-
-      try {
-        let res;
-
-        if (type === "troops") {
-          res = await API.submitTroopClaim(
-            AppState.user,
-            AppState.password,
-            amount,
-            notes
-          );
-        } else if (type === "regional") {
-          res = await API.submitRegionalClaim(
-            AppState.user,
-            AppState.password,
-            amount,
-            notes
-          );
-        } else if (type === "borderday") {
-          res = await API.submitBorderClaim(
-            AppState.user,
-            AppState.password,
-            amount,
-            notes
-          );
-        } else {
-          res = await API.submitClaim(
-            AppState.user,
-            AppState.password,
-            type,
-            amount,
-            notes
-          );
-        }
-
-        if (res.status === "success") {
-          alert("Claim submitted successfully!");
-          claimForm.reset();
-
-          await loadMyClaims();
-          await loadDashboard();
-        } else {
-          alert(
-            res.error ||
-            "Claim submission failed."
-          );
-        }
-      } catch (err) {
-        alert(err.message);
-      }
-    });
-  }
-
-  // Claims Pane
-  const claimsForm =
-    document.getElementById("claimsForm");
-
-  if (claimsForm) {
-    claimsForm.addEventListener("submit", async e => {
-      e.preventDefault();
-
-      const type =
-        document.getElementById("claimTypeSelect").value;
-
-      const amount = parseInt(
-        document.getElementById("troopsLostInput").value,
-        10
-      );
-
-      const notes =
-        document.getElementById("claimNotesInput").value;
-
-      const hint =
-        document.getElementById("claimsHint");
-
-      if (!type) {
-        hint.textContent =
-          "Please select a claim type.";
-        return;
-      }
-
-      if (!Number.isFinite(amount) || amount <= 0) {
-        hint.textContent =
-          "Please enter an amount greater than 0.";
-        return;
-      }
-
-      hint.textContent = "Submitting...";
-
-      try {
-        let res;
-
-        if (type === "troops") {
-          res = await API.submitTroopClaim(
-            AppState.user,
-            AppState.password,
-            amount,
-            notes
-          );
-        } else if (type === "regional") {
-          res = await API.submitRegionalClaim(
-            AppState.user,
-            AppState.password,
-            amount,
-            notes
-          );
-        } else if (type === "borderday") {
-          res = await API.submitBorderClaim(
-            AppState.user,
-            AppState.password,
-            amount,
-            notes
-          );
-        }
-
-        if (res && res.status === "success") {
-          hint.textContent = "";
-          alert("Claim submitted successfully!");
-          claimsForm.reset();
-
-          setupClaimTypeUI();
-
-          await loadMyClaims();
-          await loadDashboard();
-        } else {
-          hint.textContent =
-            res?.error ||
-            "Claim submission failed.";
-        }
-      } catch (err) {
-        hint.textContent =
-          "Error: " + err.message;
-      }
-    });
-  }
-
-  // Admin balance override
-  const overrideForm =
-    document.getElementById("overrideForm");
-
-  if (overrideForm) {
-    overrideForm.addEventListener("submit", async e => {
-      e.preventDefault();
-
-      const targetUser =
-        document.getElementById(
-          "overrideTargetUser"
-        ).value;
-
-      const amount = parseFloat(
-        document.getElementById("overrideAmount").value
-      );
-
-      const notes =
-        document.getElementById("overrideNotes").value;
-
-      const hint =
-        document.getElementById("overrideHint");
-
-      if (!targetUser) {
-        hint.textContent =
-          "Please select a player.";
-        return;
-      }
-
-      if (!Number.isFinite(amount) || amount === 0) {
-        hint.textContent =
-          "Please enter a non-zero amount.";
-        return;
-      }
-
-      hint.textContent = "Processing...";
-
-      try {
-        const res =
-          await API.adminAdjustBalance(
-            AppState.user,
-            AppState.password,
-            targetUser,
-            amount,
-            notes
-          );
-
-        if (res.status === "success") {
-          hint.textContent = res.message;
-          hint.style.color = "var(--good)";
-          overrideForm.reset();
-
-          await loadDashboard();
-        } else {
-          hint.textContent =
-            res.error ||
-            "Adjustment failed.";
-
-          hint.style.color =
-            "var(--crimson)";
-        }
-      } catch (err) {
-        hint.textContent =
-          "Error: " + err.message;
-
-        hint.style.color =
-          "var(--crimson)";
-      }
-    });
-  }
-}
-
-// ===== CLAIM UI =====
-
-function setupClaimTypeUI() {
-  const select =
-    document.getElementById("claimTypeSelect");
-
-  const label =
-    document.querySelector(
-      'label[for="troopsLostInput"]'
-    );
-
-  const input =
-    document.getElementById("troopsLostInput");
-
-  if (!select || !label || !input) return;
-
-  if (!select._eaBound) {
-    select.addEventListener(
-      "change",
-      setupClaimTypeUI
-    );
-
-    select._eaBound = true;
-  }
-
-  if (select.value === "regional") {
-    label.textContent = "Regional Medals";
-    input.placeholder = "e.g. 4";
-  } else if (select.value === "borderday") {
-    label.textContent = "Border Days";
-    input.placeholder = "e.g. 3";
-  } else {
-    label.textContent = "Troops Lost";
-    input.placeholder = "e.g. 150";
-  }
-}
-
-// ===== UTILS =====
-
-function setDashboardDate() {
-  const el =
-    document.getElementById("dashboardDate");
-
-  if (!el) return;
-
-  const now = new Date();
-
-  el.textContent = now.toLocaleString([], {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
-  }).toUpperCase();
+function setText(id, value) {
+    const el = $(id);
+
+    if (el) {
+        el.textContent =
+            value === null ||
+            value === undefined
+                ? ""
+                : String(value);
+    }
 }
 
 function formatNumber(value) {
-  return Number(value || 0).toLocaleString();
+    const num = Number(value) || 0;
+
+    return num.toLocaleString();
+}
+
+function formatGold(value) {
+    return `${formatNumber(value)} GOLD`;
+}
+
+function formatDate(value) {
+    if (!value) return "—";
+
+    const date = new Date(value);
+
+    if (isNaN(date.getTime())) {
+        return String(value);
+    }
+
+    return date.toLocaleString();
 }
 
 function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return "";
+    }
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
-// ===== DATA-DRIVEN WEAPON CATALOG =====
+
+/* ============================================================
+   INITIALIZATION
+   ============================================================ */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+        AppState.restoreSession();
+
+        populateSelects();
+        setupNavigation();
+        setupForms();
+        checkMobile();
+
+        if (AppState.isLoggedIn()) {
+            showWorkspace();
+        } else {
+            showLanding();
+        }
+    }
+);
+
+
+/* ============================================================
+   LANDING / WORKSPACE
+   ============================================================ */
+
+function showLanding() {
+    hide("workspace");
+    hide("workspaceView");
+    hide("appWorkspace");
+
+    show("landing");
+
+    document.body.classList.remove(
+        "logged-in"
+    );
+}
+
+function showWorkspace() {
+    hide("landing");
+
+    show("workspace");
+    show("workspaceView");
+    show("appWorkspace");
+
+    document.body.classList.add(
+        "logged-in"
+    );
+
+    setText(
+        "currentUser",
+        AppState.user
+    );
+
+    setText(
+        "welcomeUser",
+        AppState.user
+    );
+
+    const adminLinks = [
+        "adminNavLink",
+        "mobileAdminTab"
+    ];
+
+    adminLinks.forEach(id => {
+        const el = $(id);
+
+        if (!el) return;
+
+        el.style.display =
+            AppState.isAdmin
+                ? ""
+                : "none";
+    });
+
+    loadWeaponCatalog();
+    loadDashboard();
+}
+
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+
+function setupNavigation() {
+    document.querySelectorAll(
+        "[data-pane]"
+    ).forEach(button => {
+        button.addEventListener(
+            "click",
+            () => {
+                const pane =
+                    button.dataset.pane;
+
+                if (pane) {
+                    switchPane(pane);
+                }
+            }
+        );
+    });
+
+    const brand =
+        $("brandButton") ||
+        $("navBrand");
+
+    if (brand) {
+        brand.addEventListener(
+            "click",
+            () => {
+                if (AppState.isLoggedIn()) {
+                    switchPane(
+                        "dashboardPane"
+                    );
+                }
+            }
+        );
+    }
+
+    const enterPortal =
+        $("enterPortal");
+
+    if (enterPortal) {
+        enterPortal.addEventListener(
+            "click",
+            () => {
+                const loginPane =
+                    $("loginPane");
+
+                if (loginPane) {
+                    switchPane(
+                        "loginPane"
+                    );
+                }
+            }
+        );
+    }
+}
+
+function switchPane(paneId) {
+    document.querySelectorAll(
+        ".pane"
+    ).forEach(pane => {
+        pane.classList.remove(
+            "active"
+        );
+
+        pane.style.display = "none";
+    });
+
+    const target =
+        $(paneId);
+
+    if (!target) {
+        console.warn(
+            `Pane '${paneId}' not found.`
+        );
+
+        return;
+    }
+
+    target.classList.add(
+        "active"
+    );
+
+    target.style.display = "";
+
+    document.querySelectorAll(
+        "[data-pane]"
+    ).forEach(button => {
+        button.classList.toggle(
+            "active",
+            button.dataset.pane === paneId
+        );
+    });
+
+    if (
+        paneId ===
+        "dashboardPane"
+    ) {
+        loadDashboard();
+    }
+
+    if (
+        paneId ===
+        "stockpilePane"
+    ) {
+        loadStockpile();
+    }
+
+    if (
+        paneId ===
+        "bankPane"
+    ) {
+        loadBank();
+    }
+
+    if (
+        paneId ===
+        "historyPane"
+    ) {
+        loadHistory();
+    }
+
+    if (
+        paneId ===
+        "claimsPane"
+    ) {
+        loadMyClaims();
+    }
+
+    if (
+        paneId ===
+        "adminPane"
+    ) {
+        loadAdminData();
+    }
+}
+
+
+/* ============================================================
+   FORMS
+   ============================================================ */
+
+function setupForms() {
+
+    const loginForm =
+        $("loginForm");
+
+    if (loginForm) {
+        loginForm.addEventListener(
+            "submit",
+            handleLogin
+        );
+    }
+
+
+    const claimAccountForm =
+        $("claimAccountForm");
+
+    if (claimAccountForm) {
+        claimAccountForm.addEventListener(
+            "submit",
+            handleClaimAccount
+        );
+    }
+
+
+    const stockpileForm =
+        $("stockpileForm");
+
+    if (stockpileForm) {
+        stockpileForm.addEventListener(
+            "submit",
+            handleWeaponUpdate
+        );
+    }
+
+
+    const transferForm =
+        $("transferForm");
+
+    if (transferForm) {
+        transferForm.addEventListener(
+            "submit",
+            handleTransfer
+        );
+    }
+
+
+    const claimForm =
+        $("claimForm");
+
+    if (claimForm) {
+        claimForm.addEventListener(
+            "submit",
+            handleClaimSubmission
+        );
+    }
+
+
+    const claimsForm =
+        $("claimsForm");
+
+    if (claimsForm) {
+        claimsForm.addEventListener(
+            "submit",
+            handleClaimsPaneSubmission
+        );
+    }
+
+
+    const overrideForm =
+        $("overrideForm");
+
+    if (overrideForm) {
+        overrideForm.addEventListener(
+            "submit",
+            handleOverride
+        );
+    }
+
+
+    const logoutButton =
+        $("logoutButton") ||
+        $("logoutBtn");
+
+    if (logoutButton) {
+        logoutButton.addEventListener(
+            "click",
+            handleLogout
+        );
+    }
+
+
+    const refreshAdmin =
+        $("refreshAdmin") ||
+        $("adminRefreshButton");
+
+    if (refreshAdmin) {
+        refreshAdmin.addEventListener(
+            "click",
+            loadAdminData
+        );
+    }
+}
+
+
+/* ============================================================
+   SELECTS
+   ============================================================ */
+
+function populateSelects() {
+    populatePlayerSelect(
+        "loginPlayer",
+        PLAYERS
+    );
+
+    populatePlayerSelect(
+        "claimPlayer",
+        PLAYERS
+    );
+
+    populatePlayerSelect(
+        "toPlayer",
+        PLAYERS
+    );
+
+    populatePlayerSelect(
+        "overrideTargetUser",
+        PLAYERS
+    );
+
+    populateWeaponSelect(
+        "weaponSelect",
+        WEAPONS
+    );
+
+    populateWeaponSelect(
+        "weapon",
+        WEAPONS
+    );
+
+    populateWeaponSelect(
+        "adminWeapon",
+        WEAPONS
+    );
+}
+
+function populatePlayerSelect(
+    id,
+    players
+) {
+    const select = $(id);
+
+    if (!select) return;
+
+    const current =
+        select.value;
+
+    select.innerHTML =
+        `<option value="">Select player</option>`;
+
+    players.forEach(player => {
+        const option =
+            document.createElement(
+                "option"
+            );
+
+        option.value = player;
+        option.textContent = player;
+
+        select.appendChild(
+            option
+        );
+    });
+
+    if (current) {
+        select.value = current;
+    }
+}
+
+function populateWeaponSelect(
+    id,
+    weapons
+) {
+    const select = $(id);
+
+    if (!select) return;
+
+    const current =
+        select.value;
+
+    select.innerHTML =
+        `<option value="">Select weapon</option>`;
+
+    weapons.forEach(weapon => {
+        const option =
+            document.createElement(
+                "option"
+            );
+
+        option.value = weapon;
+        option.textContent = weapon;
+
+        select.appendChild(
+            option
+        );
+    });
+
+    if (current) {
+        select.value = current;
+    }
+}
+
+
+/* ============================================================
+   LIVE WEAPON CATALOG
+   ============================================================ */
 
 async function loadWeaponCatalog() {
-  try {
-    const res = await API.getStockpile(
-      AppState.user,
-      AppState.password
-    );
-
-    if (
-      res.status === "success" &&
-      res.weaponStats &&
-      typeof res.weaponStats === "object"
-    ) {
-      const weapons =
-        Object.keys(res.weaponStats);
-
-      if (weapons.length > 0) {
-        populateWeaponSelect(weapons);
-      }
-    }
-  } catch (err) {
-    console.warn(
-      "Could not load weapon catalog:",
-      err
-    );
-    // Keep fallback list if the catalog fails.
-  }
-}
-
-// ===== DASHBOARD =====
-
-async function loadDashboard() {
-  setDashboardDate();
-
-  const playerEl =
-    document.getElementById("dashboardPlayer");
-
-  const roleEl =
-    document.getElementById("dashboardRole");
-
-  const goldEl =
-    document.getElementById("dashboardGold");
-
-  const claimsEl =
-    document.getElementById("dashboardClaims");
-
-  const claimsLabelEl =
-    document.getElementById(
-      "dashboardClaimsLabel"
-    );
-
-  const unitsEl =
-    document.getElementById("dashboardUnits");
-
-  const attackEl =
-    document.getElementById("dashboardAttack");
-
-  const defenceEl =
-    document.getElementById(
-      "dashboardDefence"
-    );
-
-  const powerBarEl =
-    document.getElementById(
-      "dashboardPowerBar"
-    );
-
-  const activityEl =
-    document.getElementById(
-      "dashboardActivity"
-    );
-
-  if (playerEl) {
-    playerEl.textContent =
-      AppState.user || "—";
-  }
-
-  if (roleEl) {
-    roleEl.textContent =
-      AppState.isAdmin
-        ? "ADMINISTRATOR"
-        : "MEMBER";
-  }
-
-  if (goldEl) goldEl.textContent = "Loading...";
-  if (claimsEl) claimsEl.textContent = "Loading...";
-  if (unitsEl) unitsEl.textContent = "—";
-  if (attackEl) attackEl.textContent = "—";
-  if (defenceEl) defenceEl.textContent = "—";
-
-  if (activityEl) {
-    activityEl.innerHTML =
-      "<p class='empty-note'>Loading activity...</p>";
-  }
-
-  try {
-    const [
-      bankRes,
-      weaponRes,
-      txRes,
-      claimsRes
-    ] = await Promise.all([
-      API.getBank(
-        AppState.user,
-        AppState.password
-      ),
-
-      API.getStockpile(
-        AppState.user,
-        AppState.password
-      ),
-
-      API.getTransactions(
-        AppState.user,
-        AppState.password
-      ),
-
-      AppState.isAdmin
-        ? API.getPendingClaims(
-            AppState.user,
-            AppState.password
-          )
-        : API.getMyClaims(
-            AppState.user,
-            AppState.password
-          )
-    ]);
-
-    if (goldEl) {
-      goldEl.textContent =
-        bankRes.status === "success"
-          ? formatNumber(bankRes.goldBalance)
-          : "ERROR";
-    }
-
-    if (claimsEl) {
-      if (
-        claimsRes.status === "success" &&
-        Array.isArray(claimsRes.claims)
-      ) {
-        const pending =
-          claimsRes.claims.filter(
-            claim =>
-              String(
-                claim.Status || ""
-              ).toUpperCase() === "PENDING"
-          ).length;
-
-        claimsEl.textContent =
-          formatNumber(pending);
-
-        if (claimsLabelEl) {
-          claimsLabelEl.textContent =
-            AppState.isAdmin
-              ? "AWAITING ADMIN REVIEW"
-              : "YOUR PENDING CLAIMS";
-        }
-      } else {
-        claimsEl.textContent = "0";
-      }
-    }
-
-    if (
-      weaponRes.status === "success" &&
-      weaponRes.stockpile &&
-      weaponRes.weaponStats
-    ) {
-      let totalUnits = 0;
-      let totalAtk = 0;
-      let totalDef = 0;
-
-      Object.keys(
-        weaponRes.weaponStats
-      ).forEach(weapon => {
-        const count =
-          Number(
-            weaponRes.stockpile[weapon]
-          ) || 0;
-
-        const stat =
-          weaponRes.weaponStats[weapon] || {};
-
-        totalUnits += count;
-
-        totalAtk +=
-          count *
-          (Number(stat.attack) || 0);
-
-        totalDef +=
-          count *
-          (Number(stat.defence) || 0);
-      });
-
-      if (unitsEl) {
-        unitsEl.textContent =
-          formatNumber(totalUnits);
-      }
-
-      if (attackEl) {
-        attackEl.textContent =
-          formatNumber(totalAtk);
-      }
-
-      if (defenceEl) {
-        defenceEl.textContent =
-          formatNumber(totalDef);
-      }
-
-      const combined =
-        totalAtk + totalDef;
-
-      const strengthPercent =
-        combined > 0
-          ? Math.min(
-              100,
-              Math.max(
-                8,
-                (
-                  totalAtk /
-                  Math.max(
-                    totalAtk,
-                    totalDef,
-                    1
-                  )
-                ) * 100
-              )
-            )
-          : 0;
-
-      if (powerBarEl) {
-        powerBarEl.style.width =
-          `${strengthPercent}%`;
-      }
-    }
-
-    if (activityEl) {
-      if (
-        txRes.status === "success" &&
-        Array.isArray(
-          txRes.transactions
-        ) &&
-        txRes.transactions.length
-      ) {
-        const recent =
-          [...txRes.transactions]
-            .sort((a, b) =>
-              String(
-                b.Timestamp || ""
-              ).localeCompare(
-                String(
-                  a.Timestamp || ""
-                )
-              )
-            )
-            .slice(0, 4);
-
-        activityEl.innerHTML =
-          recent.map(tx => {
-            const amount =
-              Number(tx.Amount) || 0;
-
-            const amountClass =
-              amount >= 0
-                ? "positive"
-                : "negative";
-
-            const sign =
-              amount >= 0
-                ? "+"
-                : "";
-
-            return `
-              <div class="dashboard-activity-item">
-                <div class="dashboard-activity-top">
-                  <strong>
-                    ${escapeHtml(
-                      tx.Type ||
-                      "Transaction"
-                    )}
-                  </strong>
-
-                  <span
-                    class="dashboard-activity-amount ${amountClass}"
-                  >
-                    ${sign}${formatNumber(
-                      amount
-                    )} Gold
-                  </span>
-                </div>
-
-                <small class="dashboard-activity-meta">
-                  ${escapeHtml(
-                    tx.Timestamp || ""
-                  )}
-                  ${
-                    tx.Notes
-                      ? " • " +
-                        escapeHtml(
-                          tx.Notes
-                        )
-                      : ""
-                  }
-                </small>
-              </div>
-            `;
-          }).join("");
-      } else {
-        activityEl.innerHTML =
-          "<p class='empty-note'>No treasury activity yet.</p>";
-      }
-    }
-  } catch (err) {
-    if (goldEl) goldEl.textContent = "ERROR";
-    if (claimsEl) claimsEl.textContent = "ERROR";
-
-    if (activityEl) {
-      activityEl.innerHTML =
-        `<p class='empty-note'>Error: ${escapeHtml(err.message)}</p>`;
-    }
-  }
-}
-
-// ===== STOCKPILE =====
-
-async function loadStockpile() {
-  const grid =
-    document.getElementById(
-      "liveWeaponsGrid"
-    );
-
-  if (!grid) return;
-
-  grid.innerHTML =
-    "<p class='empty-note'>Loading inventory...</p>";
-
-  try {
-    const res =
-      await API.getStockpile(
-        AppState.user,
-        AppState.password
-      );
-
-    if (
-      res.status === "success" &&
-      res.stockpile &&
-      res.weaponStats
-    ) {
-      grid.innerHTML = "";
-
-      const stockpile =
-        res.stockpile;
-
-      const stats =
-        res.weaponStats;
-
-      Object.keys(stats).forEach(
-        weapon => {
-          const count =
-            Number(
-              stockpile[weapon]
-            ) || 0;
-
-          const div =
-            document.createElement(
-              "div"
-            );
-
-          div.className =
-            "weapon-row";
-
-          div.innerHTML = `
-            <span>
-              ${escapeHtml(weapon)}
-            </span>
-
-            <span class="weapon-count">
-              ${count.toLocaleString()}
-            </span>
-          `;
-
-          grid.appendChild(div);
-        }
-      );
-    } else {
-      grid.innerHTML =
-        "<p class='empty-note'>No weapon data available.</p>";
-    }
-  } catch (err) {
-    grid.innerHTML =
-      `<p class='empty-note'>Error: ${escapeHtml(err.message)}</p>`;
-  }
-}
-
-// ===== BANK =====
-
-async function loadBank() {
-  const balanceEl =
-    document.getElementById(
-      "balanceAmount"
-    );
-
-  if (!balanceEl) return;
-
-  balanceEl.textContent = "Loading...";
-
-  try {
-    const res =
-      await API.getBank(
-        AppState.user,
-        AppState.password
-      );
-
-    if (res.status === "success") {
-      balanceEl.textContent =
-        formatNumber(
-          res.goldBalance
-        ) + " Gold";
-    } else {
-      balanceEl.textContent = "Error";
-    }
-  } catch (err) {
-    balanceEl.textContent = "Error";
-  }
-}
-
-// ===== HISTORY =====
-
-async function loadHistory() {
-  const historyList =
-    document.getElementById(
-      "historyList"
-    );
-
-  if (!historyList) return;
-
-  historyList.innerHTML =
-    "<p class='empty-note'>Loading transactions...</p>";
-
-  try {
-    const res =
-      await API.getTransactions(
-        AppState.user,
-        AppState.password
-      );
-
-    if (
-      res.status === "success" &&
-      Array.isArray(
-        res.transactions
-      )
-    ) {
-      if (
-        res.transactions.length === 0
-      ) {
-        historyList.innerHTML =
-          "<p class='empty-note'>No transactions found.</p>";
+    if (!AppState.isLoggedIn()) {
         return;
-      }
+    }
 
-      historyList.innerHTML = "";
-
-      [...res.transactions]
-        .reverse()
-        .forEach(tx => {
-          const item =
-            document.createElement(
-              "div"
+    try {
+        const res =
+            await API.getStockpile(
+                AppState.user,
+                AppState.password
             );
-
-          item.className =
-            "history-item";
-
-          const amount =
-            Number(tx.Amount) || 0;
-
-          const amountClass =
-            amount >= 0
-              ? "positive"
-              : "negative";
-
-          const amountSign =
-            amount >= 0
-              ? "+"
-              : "";
-
-          item.innerHTML = `
-            <div>
-              <strong>
-                ${escapeHtml(
-                  tx.Type ||
-                  "Transaction"
-                )}
-              </strong>
-            </div>
-
-            <small>
-              ${escapeHtml(
-                tx.Timestamp || ""
-              )}
-              ${
-                tx.Notes
-                  ? " | " +
-                    escapeHtml(
-                      tx.Notes
-                    )
-                  : ""
-              }
-            </small>
-
-            <div class="ledger-amount ${amountClass}">
-              ${amountSign}${formatNumber(
-                amount
-              )} Gold
-            </div>
-
-            <small>
-              Balance:
-              ${formatNumber(
-                tx["Balance After"] || 0
-              )}
-            </small>
-          `;
-
-          historyList.appendChild(item);
-        });
-    } else {
-      historyList.innerHTML =
-        "<p class='empty-note'>No transactions found.</p>";
-    }
-  } catch (err) {
-    historyList.innerHTML =
-      `<p class='empty-note'>Error: ${escapeHtml(err.message)}</p>`;
-  }
-}
-
-// ===== MY CLAIMS =====
-
-async function loadMyClaims() {
-  const list =
-    document.getElementById(
-      "myClaimsList"
-    );
-
-  const card =
-    document.getElementById(
-      "myClaimsCard"
-    );
-
-  if (!list || !card) return;
-
-  card.style.display = "block";
-
-  list.innerHTML =
-    "<p class='empty-note'>Loading claims...</p>";
-
-  try {
-    const res =
-      await API.getMyClaims(
-        AppState.user,
-        AppState.password
-      );
-
-    if (
-      res.status !== "success" ||
-      !Array.isArray(
-        res.claims
-      )
-    ) {
-      list.innerHTML =
-        `<p class='empty-note'>${escapeHtml(res.error || "Unable to load claims.")}</p>`;
-      return;
-    }
-
-    if (res.claims.length === 0) {
-      list.innerHTML =
-        "<p class='empty-note'>No claims found.</p>";
-      return;
-    }
-
-    list.innerHTML = "";
-
-    [...res.claims]
-      .reverse()
-      .forEach(claim => {
-        const item =
-          document.createElement(
-            "div"
-          );
-
-        item.className =
-          "claim-item";
-
-        const type =
-          String(
-            claim.Type ||
-            "Claim"
-          );
-
-        const upperType =
-          type.toUpperCase();
-
-        const status =
-          String(
-            claim.Status ||
-            "PENDING"
-          ).toLowerCase();
-
-        const troops =
-          Number(
-            claim.Troops ||
-            claim["Troops Lost"] ||
-            0
-          );
-
-        const medals =
-          Number(
-            claim.Medals ||
-            claim["Regional Medals"] ||
-            0
-          );
-
-        const days =
-          Number(
-            claim["Border Days"] ||
-            claim.Days ||
-            0
-          );
-
-        let amountText =
-          "Claim submitted";
 
         if (
-          upperType.includes("TROOP") ||
-          upperType.includes("LOSS")
+            res &&
+            res.status === "success" &&
+            res.weaponStats
         ) {
-          amountText =
-            `${troops.toLocaleString()} troops lost`;
-        } else if (
-          upperType.includes("REGIONAL") ||
-          upperType.includes("MEDAL")
-        ) {
-          amountText =
-            `${medals.toLocaleString()} regional medals`;
-        } else if (
-          upperType.includes("BORDER")
-        ) {
-          amountText =
-            `${days.toLocaleString()} border days`;
+            const liveWeapons =
+                Object.keys(
+                    res.weaponStats
+                );
+
+            if (liveWeapons.length) {
+                AppState.weaponCatalog =
+                    liveWeapons;
+
+                populateWeaponSelect(
+                    "weaponSelect",
+                    liveWeapons
+                );
+
+                populateWeaponSelect(
+                    "weapon",
+                    liveWeapons
+                );
+
+                populateWeaponSelect(
+                    "adminWeapon",
+                    liveWeapons
+                );
+            }
         }
-
-        item.innerHTML = `
-          <div>
-            <strong>
-              ${escapeHtml(type)}
-            </strong>
-
-            <span class="claim-status ${escapeHtml(status)}">
-              ${escapeHtml(status)}
-            </span>
-          </div>
-
-          <small>
-            ID:
-            ${escapeHtml(
-              String(
-                claim["Claim ID"] || ""
-              )
-            )}
-            |
-            ${escapeHtml(
-              String(
-                claim.Date || ""
-              )
-            )}
-          </small>
-
-          <div>
-            ${escapeHtml(
-              amountText
-            )}
-          </div>
-
-          ${
-            Number(claim.Gold) > 0
-              ? `<div>Paid: ${formatNumber(
-                  claim.Gold
-                )} Gold</div>`
-              : ""
-          }
-
-          ${
-            claim["Approved By"]
-              ? `<small>Processed by: ${escapeHtml(
-                  String(
-                    claim["Approved By"]
-                  )
-                )}</small>`
-              : ""
-          }
-
-          ${
-            claim.Notes
-              ? `<small>${escapeHtml(
-                  String(
-                    claim.Notes
-                  )
-                )}</small>`
-              : ""
-          }
-        `;
-
-        list.appendChild(item);
-      });
-  } catch (err) {
-    list.innerHTML =
-      `<p class='empty-note'>Error: ${escapeHtml(err.message)}</p>`;
-  }
+    } catch (err) {
+        console.warn(
+            "Could not load live weapon catalog:",
+            err
+        );
+    }
 }
 
-// ===== ADMIN CLAIMS =====
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+
+async function handleLogin(event) {
+    event.preventDefault();
+
+    const player =
+        $("loginPlayer")?.value ||
+        $("playerSelect")?.value;
+
+    const password =
+        $("loginPassword")?.value ||
+        $("password")?.value;
+
+    if (!player || !password) {
+        alert(
+            "Please enter your player name and password."
+        );
+
+        return;
+    }
+
+    try {
+        setLoading(
+            "loginHint",
+            "Authenticating..."
+        );
+
+        const res =
+            await API.login(
+                player,
+                password
+            );
+
+        if (
+            !res ||
+            res.status !== "success"
+        ) {
+            throw new Error(
+                res?.error ||
+                "Login failed."
+            );
+        }
+
+        AppState.setSession(
+            res.player,
+            password,
+            res.isAdmin
+        );
+
+        showWorkspace();
+
+    } catch (err) {
+        alert(
+            err.message ||
+            "Login failed."
+        );
+
+        setLoading(
+            "loginHint",
+            ""
+        );
+    }
+}
+
+
+/* ============================================================
+   CLAIM ACCOUNT
+   ============================================================ */
+
+async function handleClaimAccount(
+    event
+) {
+    event.preventDefault();
+
+    const player =
+        $("claimAccountPlayer")?.value ||
+        $("claimPlayer")?.value;
+
+    const password =
+        $("claimAccountPassword")?.value ||
+        $("newPassword")?.value;
+
+    if (!player || !password) {
+        alert(
+            "Please enter a player name and password."
+        );
+
+        return;
+    }
+
+    if (password.length < 6) {
+        alert(
+            "Password must be at least 6 characters."
+        );
+
+        return;
+    }
+
+    try {
+        const res =
+            await API.claimAccount(
+                player,
+                password
+            );
+
+        if (
+            !res ||
+            res.status !== "success"
+        ) {
+            throw new Error(
+                res?.error ||
+                "Unable to claim account."
+            );
+        }
+
+        alert(
+            "Account claimed successfully. You can now log in."
+        );
+
+        event.target.reset();
+
+    } catch (err) {
+        alert(
+            err.message ||
+            "Unable to claim account."
+        );
+    }
+}
+
+
+/* ============================================================
+   LOGOUT
+   ============================================================ */
+
+async function handleLogout() {
+    try {
+        if (
+            AppState.isLoggedIn() &&
+            API.logout
+        ) {
+            await API.logout(
+                AppState.user,
+                AppState.password
+            );
+        }
+    } catch (err) {
+        console.warn(
+            "Logout request failed:",
+            err
+        );
+    }
+
+    AppState.clearSession();
+
+    showLanding();
+}
+
+
+/* ============================================================
+   STOCKPILE
+   ============================================================ */
+
+async function loadStockpile() {
+    const container =
+        $("stockpileList") ||
+        $("stockpileContent");
+
+    if (container) {
+        container.innerHTML =
+            `<div class="loading">Loading stockpile...</div>`;
+    }
+
+    try {
+        const res =
+            await API.getStockpile(
+                AppState.user,
+                AppState.password
+            );
+
+        if (
+            !res ||
+            res.status !== "success"
+        ) {
+            throw new Error(
+                res?.error ||
+                "Unable to load stockpile."
+            );
+        }
+
+        renderStockpile(res);
+
+    } catch (err) {
+        if (container) {
+            container.innerHTML =
+                `<div class="error">${escapeHtml(err.message)}</div>`;
+        }
+    }
+}
+
+function renderStockpile(res) {
+    const container =
+        $("stockpileList") ||
+        $("stockpileContent");
+
+    if (!container) return;
+
+    const stockpile =
+        res.stockpile ||
+        res.weapons ||
+        {};
+
+    const stats =
+        res.weaponStats ||
+        {};
+
+    const weaponNames =
+        Object.keys(stats).length
+            ? Object.keys(stats)
+            : Object.keys(stockpile);
+
+    let html = "";
+
+    weaponNames.forEach(
+        weapon => {
+            const count =
+                Number(
+                    stockpile[weapon] ||
+                    stockpile[weapon]?.count ||
+                    0
+                );
+
+            const weaponStat =
+                stats[weapon] ||
+                {};
+
+            html += `
+                <div class="weapon-row">
+                    <div class="weapon-info">
+                        <strong>${escapeHtml(weapon)}</strong>
+                        <span>
+                            ATK ${formatNumber(
+                                weaponStat.attack ||
+                                weaponStat.ATK ||
+                                0
+                            )}
+                            ·
+                            DEF ${formatNumber(
+                                weaponStat.defence ||
+                                weaponStat.DEF ||
+                                0
+                            )}
+                        </span>
+                    </div>
+
+                    <div class="weapon-count">
+                        ${formatNumber(count)}
+                    </div>
+                </div>
+            `;
+        }
+    );
+
+    container.innerHTML =
+        html ||
+        `<div class="empty-state">No weapons found.</div>`;
+
+    setText(
+        "stockpileTotalUnits",
+        formatNumber(
+            res.totalUnits || 0
+        )
+    );
+
+    setText(
+        "stockpileTotalAtk",
+        formatNumber(
+            res.totalAtk || 0
+        )
+    );
+
+    setText(
+        "stockpileTotalDef",
+        formatNumber(
+            res.totalDef || 0
+        )
+    );
+}
+
+async function handleWeaponUpdate(
+    event
+) {
+    event.preventDefault();
+
+    const weapon =
+        $("weaponSelect")?.value ||
+        $("weapon")?.value;
+
+    const quantity =
+        $("weaponQuantity")?.value ||
+        $("quantity")?.value;
+
+    if (!weapon) {
+        alert(
+            "Please select a weapon."
+        );
+
+        return;
+    }
+
+    try {
+        const res =
+            await API.updateWeapon(
+                AppState.user,
+                AppState.password,
+                weapon,
+                quantity
+            );
+
+        if (
+            !res ||
+            res.status !== "success"
+        ) {
+            throw new Error(
+                res?.error ||
+                "Unable to update weapon."
+            );
+        }
+
+        alert(
+            "Weapon stockpile updated."
+        );
+
+        event.target.reset();
+
+        loadStockpile();
+        loadDashboard();
+
+    } catch (err) {
+        alert(
+            err.message ||
+            "Unable to update weapon."
+        );
+    }
+}
+
+
+/* ============================================================
+   BANK
+   ============================================================ */
+
+async function loadBank() {
+    try {
+        const res =
+            await API.getBank(
+                AppState.user,
+                AppState.password
+            );
+
+        if (
+            !res ||
+            res.status !== "success"
+        ) {
+            throw new Error(
+                res?.error ||
+                "Unable to load bank."
+            );
+        }
+
+        setText(
+            "bankGold",
+            formatGold(
+                res.goldBalance || 0
+            )
+        );
+
+        setText(
+            "goldBalance",
+            formatNumber(
+                res.goldBalance || 0
+            )
+        );
+
+        setText(
+            "dashboardGold",
+            formatNumber(
+                res.goldBalance || 0
+            )
+        );
+
+    } catch (err) {
+        console.error(
+            "Bank loading failed:",
+            err
+        );
+    }
+}
+
+async function handleTransfer(
+    event
+) {
+    event.preventDefault();
+
+    const toPlayer =
+        $("toPlayer")?.value ||
+        $("transferTarget")?.value;
+
+    const amount =
+        $("transferAmount")?.value ||
+        $("amount")?.value;
+
+    if (!toPlayer || !amount) {
+        alert(
+            "Please enter a recipient and amount."
+        );
+
+        return;
+    }
+
+    try {
+        const res =
+            await API.transfer(
+                AppState.user,
+                AppState.password,
+                toPlayer,
+                amount
+            );
+
+        if (
+            !res ||
+            res.status !== "success"
+        ) {
+            throw new Error(
+                res?.error ||
+                "Transfer failed."
+            );
+        }
+
+        alert(
+            res.message ||
+            "Transfer successful."
+        );
+
+        event.target.reset();
+
+        loadBank();
+        loadHistory();
+        loadDashboard();
+
+    } catch (err) {
+        alert(
+            err.message ||
+            "Transfer failed."
+        );
+    }
+}
+
+
+/* ============================================================
+   HISTORY
+   ============================================================ */
+
+async function loadHistory() {
+    const container =
+        $("historyList") ||
+        $("historyContent");
+
+    if (container) {
+        container.innerHTML =
+            `<div class="loading">Loading history...</div>`;
+    }
+
+    try {
+        const res =
+            await API.getTransactions(
+                AppState.user,
+                AppState.password
+            );
+
+        if (
+            !res ||
+            res.status !== "success"
+        ) {
+            throw new Error(
+                res?.error ||
+                "Unable to load history."
+            );
+        }
+
+        const transactions =
+            res.transactions ||
+            [];
+
+        if (!container) return;
+
+        if (!transactions.length) {
+            container.innerHTML =
+                `<div class="empty-state">No transactions yet.</div>`;
+
+            return;
+        }
+
+        container.innerHTML =
+            transactions
+                .map(tx => `
+                    <div class="history-row">
+                        <div>
+                            <strong>
+                                ${escapeHtml(
+                                    tx["Type"] ||
+                                    "Transaction"
+                                )}
+                            </strong>
+
+                            <span>
+                                ${escapeHtml(
+                                    tx["Notes"] ||
+                                    ""
+                                )}
+                            </span>
+                        </div>
+
+                        <div>
+                            <strong>
+                                ${formatNumber(
+                                    tx["Amount"] || 0
+                                )}
+                            </strong>
+
+                            <span>
+                                ${escapeHtml(
+                                    formatDate(
+                                        tx["Timestamp"]
+                                    )
+                                )}
+                            </span>
+                        </div>
+
+                        <div>
+                            Balance:
+                            ${formatNumber(
+                                tx["Balance After"] || 0
+                            )}
+                        </div>
+                    </div>
+                `)
+                .join("");
+
+    } catch (err) {
+        if (container) {
+            container.innerHTML =
+                `<div class="error">${escapeHtml(err.message)}</div>`;
+        }
+    }
+}
+
+
+/* ============================================================
+   CLAIM SUBMISSION
+   ============================================================ */
+
+async function handleClaimSubmission(
+    event
+) {
+    event.preventDefault();
+
+    const type =
+        $("claimType")?.value;
+
+    const amount =
+        $("claimAmount")?.value;
+
+    const notes =
+        $("claimNotes")?.value || "";
+
+    if (!type) {
+        alert(
+            "Please select a claim type."
+        );
+
+        return;
+    }
+
+    try {
+        let res;
+
+        if (
+            type.toLowerCase() ===
+            "troops"
+        ) {
+            res =
+                await API.submitTroopClaim(
+                    AppState.user,
+                    AppState.password,
+                    amount,
+                    notes
+                );
+
+        } else if (
+            type.toLowerCase() ===
+            "regional"
+        ) {
+            res =
+                await API.submitRegionalClaim(
+                    AppState.user,
+                    AppState.password,
+                    amount,
+                    notes
+                );
+
+        } else if (
+            type.toLowerCase() ===
+            "borderday"
+        ) {
+            res =
+                await API.submitBorderClaim(
+                    AppState.user,
+                    AppState.password,
+                    amount,
+                    notes
+                );
+
+        } else {
+            res =
+                await API.submitClaim(
+                    AppState.user,
+                    AppState.password,
+                    type,
+                    amount,
+                    notes
+                );
+        }
+
+        if (
+            !res ||
+            res.status !== "success"
+        ) {
+            throw new Error(
+                res?.error ||
+                "Unable to submit claim."
+            );
+        }
+
+        alert(
+            res.message ||
+            "Claim submitted successfully!"
+        );
+
+        event.target.reset();
+
+        loadMyClaims();
+
+    } catch (err) {
+        alert(
+            err.message ||
+            "Unable to submit claim."
+        );
+    }
+}
+
+
+/* ============================================================
+   CLAIMS PANE
+   ============================================================ */
+
+async function handleClaimsPaneSubmission(
+    event
+) {
+    event.preventDefault();
+
+    const type =
+        $("claimTypeSelect")?.value;
+
+    const troops =
+        $("troopsLostInput")?.value;
+
+    const notes =
+        $("claimNotesInput")?.value ||
+        "";
+
+    if (!type) {
+        alert(
+            "Please select a claim type."
+        );
+
+        return;
+    }
+
+    try {
+        let res;
+
+        if (
+            type.toLowerCase() ===
+            "troops"
+        ) {
+            if (
+                Number(troops) < 0
+            ) {
+                throw new Error(
+                    "Troops lost cannot be negative."
+                );
+            }
+
+            res =
+                await API.submitTroopClaim(
+                    AppState.user,
+                    AppState.password,
+                    troops,
+                    notes
+                );
+
+        } else if (
+            type.toLowerCase() ===
+            "regional"
+        ) {
+            res =
+                await API.submitRegionalClaim(
+                    AppState.user,
+                    AppState.password,
+                    troops,
+                    notes
+                );
+
+        } else if (
+            type.toLowerCase() ===
+            "borderday"
+        ) {
+            res =
+                await API.submitBorderClaim(
+                    AppState.user,
+                    AppState.password,
+                    troops,
+                    notes
+                );
+
+        } else {
+            res =
+                await API.submitClaim(
+                    AppState.user,
+                    AppState.password,
+                    type,
+                    troops,
+                    notes
+                );
+        }
+
+        if (
+            !res ||
+            res.status !== "success"
+        ) {
+            throw new Error(
+                res?.error ||
+                "Unable to submit claim."
+            );
+        }
+
+        alert(
+            "Claim submitted successfully!"
+        );
+
+        event.target.reset();
+
+        loadMyClaims();
+
+    } catch (err) {
+        alert(
+            err.message ||
+            "Unable to submit claim."
+        );
+    }
+}
+
+async function loadMyClaims() {
+    const container =
+        $("myClaimsList") ||
+        $("claimsList");
+
+    if (container) {
+        container.innerHTML =
+            `<div class="loading">Loading claims...</div>`;
+    }
+
+    try {
+        const res =
+            await API.getMyClaims(
+                AppState.user,
+                AppState.password
+            );
+
+        if (
+            !res ||
+            res.status !== "success"
+        ) {
+            throw new Error(
+                res?.error ||
+                "Unable to load claims."
+            );
+        }
+
+        const claims =
+            res.claims || [];
+
+        if (!container) return;
+
+        if (!claims.length) {
+            container.innerHTML =
+                `<div class="empty-state">No claims submitted.</div>`;
+
+            setText(
+                "pendingClaimsCount",
+                "0"
+            );
+
+            return;
+        }
+
+        const pending =
+            claims.filter(
+                claim =>
+                    String(
+                        claim["Status"] ||
+                        "PENDING"
+                    ).toUpperCase() ===
+                    "PENDING"
+            ).length;
+
+        setText(
+            "pendingClaimsCount",
+            formatNumber(pending)
+        );
+
+        container.innerHTML =
+            claims
+                .map(claim => {
+                    const status =
+                        String(
+                            claim["Status"] ||
+                            "PENDING"
+                        ).toUpperCase();
+
+                    const troops =
+                        claim["Troops"] ||
+                        claim["Troops Lost"] ||
+                        0;
+
+                    const medals =
+                        claim["Medals"] ||
+                        claim["Regional Medals"] ||
+                        0;
+
+                    const borderDays =
+                        claim["Border Days"] ||
+                        claim["Days"] ||
+                        0;
+
+                    return `
+                        <div class="claim-card">
+                            <div class="claim-card-header">
+                                <strong>
+                                    ${escapeHtml(
+                                        claim["Type"] ||
+                                        "CLAIM"
+                                    )}
+                                </strong>
+
+                                <span class="status ${status.toLowerCase()}">
+                                    ${escapeHtml(status)}
+                                </span>
+                            </div>
+
+                            <div class="claim-meta">
+                                <span>
+                                    ID:
+                                    ${escapeHtml(
+                                        claim["Claim ID"] ||
+                                        "—"
+                                    )}
+                                </span>
+
+                                <span>
+                                    ${escapeHtml(
+                                        formatDate(
+                                            claim["Date"]
+                                        )
+                                    )}
+                                </span>
+                            </div>
+
+                            <div class="claim-values">
+                                ${
+                                    Number(troops) > 0
+                                        ? `<span>Troops: ${formatNumber(troops)}</span>`
+                                        : ""
+                                }
+
+                                ${
+                                    Number(medals) > 0
+                                        ? `<span>Medals: ${formatNumber(medals)}</span>`
+                                        : ""
+                                }
+
+                                ${
+                                    Number(borderDays) > 0
+                                        ? `<span>Border Days: ${formatNumber(borderDays)}</span>`
+                                        : ""
+                                }
+
+                                <span>
+                                    Gold:
+                                    ${formatNumber(
+                                        claim["Gold"] || 0
+                                    )}
+                                </span>
+                            </div>
+
+                            ${
+                                claim["Notes"]
+                                    ? `
+                                        <div class="claim-notes">
+                                            ${escapeHtml(
+                                                claim["Notes"]
+                                            )}
+                                        </div>
+                                    `
+                                    : ""
+                            }
+                        </div>
+                    `;
+                })
+                .join("");
+
+    } catch (err) {
+        if (container) {
+            container.innerHTML =
+                `<div class="error">${escapeHtml(err.message)}</div>`;
+        }
+    }
+}
+
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+
+async function loadDashboard() {
+    if (!AppState.isLoggedIn()) {
+        return;
+    }
+
+    try {
+        const [
+            bankRes,
+            stockRes,
+            claimsRes,
+            transactionsRes
+        ] = await Promise.all([
+            API.getBank(
+                AppState.user,
+                AppState.password
+            ),
+
+            API.getStockpile(
+                AppState.user,
+                AppState.password
+            ),
+
+            API.getMyClaims(
+                AppState.user,
+                AppState.password
+            ),
+
+            API.getTransactions(
+                AppState.user,
+                AppState.password
+            )
+        ]);
+
+        if (
+            bankRes &&
+            bankRes.status ===
+                "success"
+        ) {
+            setText(
+                "dashboardGold",
+                formatNumber(
+                    bankRes.goldBalance || 0
+                )
+            );
+
+            setText(
+                "bankGold",
+                formatGold(
+                    bankRes.goldBalance || 0
+                )
+            );
+        }
+
+        if (
+            stockRes &&
+            stockRes.status ===
+                "success"
+        ) {
+            setText(
+                "dashboardUnits",
+                formatNumber(
+                    stockRes.totalUnits || 0
+                )
+            );
+
+            setText(
+                "dashboardAtk",
+                formatNumber(
+                    stockRes.totalAtk || 0
+                )
+            );
+
+            setText(
+                "dashboardDef",
+                formatNumber(
+                    stockRes.totalDef || 0
+                )
+            );
+
+            setText(
+                "dashboardTotalUnits",
+                formatNumber(
+                    stockRes.totalUnits || 0
+                )
+            );
+        }
+
+        if (
+            claimsRes &&
+            claimsRes.status ===
+                "success"
+        ) {
+            const claims =
+                claimsRes.claims || [];
+
+            const pending =
+                claims.filter(
+                    claim =>
+                        String(
+                            claim["Status"] ||
+                            "PENDING"
+                        ).toUpperCase() ===
+                        "PENDING"
+                );
+
+            setText(
+                "dashboardPendingClaims",
+                formatNumber(
+                    pending.length
+                )
+            );
+
+            setText(
+                "pendingClaimsCount",
+                formatNumber(
+                    pending.length
+                )
+            );
+        }
+
+        if (
+            transactionsRes &&
+            transactionsRes.status ===
+                "success"
+        ) {
+            renderDashboardTransactions(
+                transactionsRes.transactions ||
+                []
+            );
+        }
+
+    } catch (err) {
+        console.warn(
+            "Dashboard loading issue:",
+            err
+        );
+    }
+
+    setText(
+        "dashboardUser",
+        AppState.user
+    );
+
+    setText(
+        "dashboardRole",
+        AppState.isAdmin
+            ? "ADMIN"
+            : "MEMBER"
+    );
+}
+
+function renderDashboardTransactions(
+    transactions
+) {
+    const container =
+        $("dashboardRecentActivity");
+
+    if (!container) return;
+
+    if (!transactions.length) {
+        container.innerHTML =
+            `<div class="empty-state">No treasury activity yet.</div>`;
+
+        return;
+    }
+
+    container.innerHTML =
+        transactions
+            .slice(0, 5)
+            .map(tx => `
+                <div class="activity-row">
+                    <div>
+                        <strong>
+                            ${escapeHtml(
+                                tx["Type"] ||
+                                "Transaction"
+                            )}
+                        </strong>
+
+                        <span>
+                            ${escapeHtml(
+                                tx["Notes"] ||
+                                ""
+                            )}
+                        </span>
+                    </div>
+
+                    <strong>
+                        ${formatNumber(
+                            tx["Amount"] || 0
+                        )}
+                    </strong>
+                </div>
+            `)
+            .join("");
+}
+
+
+/* ============================================================
+   ADMIN
+   ============================================================ */
 
 async function loadAdminData() {
-  if (!AppState.isAdmin) return;
-
-  const pendingList =
-    document.getElementById(
-      "pendingClaimsList"
-    );
-
-  if (!pendingList) return;
-
-  pendingList.innerHTML =
-    "<p class='empty-note'>Loading pending claims...</p>";
-
-  try {
-    const res =
-      await API.getPendingClaims(
-        AppState.user,
-        AppState.password
-      );
-
-    if (
-      res.status !== "success" ||
-      !Array.isArray(
-        res.claims
-      )
-    ) {
-      pendingList.innerHTML =
-        `<p class='empty-note'>${escapeHtml(res.error || "Unable to load pending claims.")}</p>`;
-      return;
+    if (!AppState.isAdmin) {
+        return;
     }
 
-    if (res.claims.length === 0) {
-      pendingList.innerHTML =
-        "<p class='empty-note'>No pending claims.</p>";
-      return;
+    const container =
+        $("pendingClaimsList");
+
+    if (container) {
+        container.innerHTML =
+            `<div class="loading">Loading pending claims...</div>`;
     }
 
-    pendingList.innerHTML = "";
+    try {
+        const res =
+            await API.adminOverview(
+                AppState.user,
+                AppState.password
+            );
 
-    res.claims.forEach(claim => {
-      const item =
-        document.createElement(
-          "div"
-        );
-
-      item.className =
-        "claim-item";
-
-      const claimId =
-        String(
-          claim["Claim ID"] || ""
-        );
-
-      const player =
-        String(
-          claim.Player ||
-          "Unknown"
-        );
-
-      const type =
-        String(
-          claim.Type ||
-          "Claim"
-        );
-
-      const date =
-        String(
-          claim.Date || ""
-        );
-
-      const notes =
-        String(
-          claim.Notes || ""
-        );
-
-      const upperType =
-        type.toUpperCase();
-
-      const troops =
-        Number(
-          claim.Troops ||
-          claim["Troops Lost"] ||
-          0
-        );
-
-      const medals =
-        Number(
-          claim.Medals ||
-          claim["Regional Medals"] ||
-          0
-        );
-
-      const days =
-        Number(
-          claim["Border Days"] ||
-          claim.Days ||
-          0
-        );
-
-      let amountText =
-        "Unknown amount";
-
-      let payout = 0;
-
-      if (
-        upperType.includes("TROOP") ||
-        upperType.includes("LOSS")
-      ) {
-        amountText =
-          `${troops.toLocaleString()} troops lost`;
-
-        payout =
-          troops * 30;
-
-      } else if (
-        upperType.includes("REGIONAL") ||
-        upperType.includes("MEDAL")
-      ) {
-        amountText =
-          `${medals.toLocaleString()} regional medals`;
-
-        payout =
-          medals * 750;
-
-      } else if (
-        upperType.includes("BORDER")
-      ) {
-        amountText =
-          `${days.toLocaleString()} border days`;
-
-        payout =
-          days * 10000;
-      }
-
-      const approveDisabled =
-        payout <= 0;
-
-      item.innerHTML = `
-        <div>
-          <strong>
-            ${escapeHtml(type)}
-          </strong>
-
-          <span class="claim-status pending">
-            PENDING
-          </span>
-        </div>
-
-        <div>
-          <strong>Player:</strong>
-          ${escapeHtml(player)}
-        </div>
-
-        <small>
-          ID:
-          ${escapeHtml(claimId)}
-          |
-          ${escapeHtml(date)}
-        </small>
-
-        <div>
-          <strong>Claim:</strong>
-          ${escapeHtml(amountText)}
-        </div>
-
-        <div>
-          <strong>Payout:</strong>
-          ${formatNumber(payout)} Gold
-        </div>
-
-        ${
-          notes
-            ? `<small>Notes: ${escapeHtml(
-                notes
-              )}</small>`
-            : ""
+        if (
+            !res ||
+            res.status !== "success"
+        ) {
+            throw new Error(
+                res?.error ||
+                "Unable to load admin data."
+            );
         }
 
-        <div class="admin-claim-actions">
-          <button
-            class="btn btn-primary"
-            ${approveDisabled ? "disabled" : ""}
-            data-claim-action="approve"
-            data-claim-id="${escapeHtml(
-              claimId
-            )}"
-          >
-            APPROVE
-          </button>
+        renderAdminOverview(res);
+        renderPendingClaims(
+            res.pendingClaims || []
+        );
+        renderClaimHistory(
+            res.claimHistory || []
+        );
+        renderAdminLogs(
+            res.recentLogs || []
+        );
+        renderAdminMembers(
+            res.accounts || []
+        );
 
-          <button
-            class="btn btn-outline"
-            data-claim-action="reject"
-            data-claim-id="${escapeHtml(
-              claimId
-            )}"
-          >
-            REJECT
-          </button>
-        </div>
+    } catch (err) {
+        console.error(
+            "Admin loading failed:",
+            err
+        );
 
-        ${
-          approveDisabled
-            ? `<p class="hint">This claim has no valid amount and cannot be approved.</p>`
-            : ""
+        if (container) {
+            container.innerHTML =
+                `<div class="error">${escapeHtml(err.message)}</div>`;
         }
-      `;
-
-      const approveBtn =
-        item.querySelector(
-          '[data-claim-action="approve"]'
-        );
-
-      const rejectBtn =
-        item.querySelector(
-          '[data-claim-action="reject"]'
-        );
-
-      if (approveBtn) {
-        approveBtn.addEventListener(
-          "click",
-          () =>
-            handleClaimAction(
-              claimId,
-              "APPROVE"
-            )
-        );
-      }
-
-      if (rejectBtn) {
-        rejectBtn.addEventListener(
-          "click",
-          () =>
-            handleClaimAction(
-              claimId,
-              "REJECT"
-            )
-        );
-      }
-
-      pendingList.appendChild(
-        item
-      );
-    });
-  } catch (err) {
-    pendingList.innerHTML =
-      `<p class='empty-note'>Error: ${escapeHtml(err.message)}</p>`;
-  }
+    }
 }
 
-// ===== ADMIN ACTIONS =====
-
-async function handleDisableEnable(action) {
-  const target =
-    document.getElementById(
-      "adminTargetUser"
-    ).value;
-
-  const hint =
-    document.getElementById(
-      "adminDisableHint"
+function renderAdminOverview(
+    data
+) {
+    setText(
+        "adminTotalMembers",
+        formatNumber(
+            data.totalMembers || 0
+        )
     );
 
-  if (!target) {
-    hint.textContent =
-      "Please select a player.";
-    return;
-  }
+    setText(
+        "adminPendingClaims",
+        formatNumber(
+            data.pendingClaimsCount || 0
+        )
+    );
 
-  hint.textContent =
-    "Processing...";
+    setText(
+        "adminTotalGold",
+        formatNumber(
+            data.totalGold || 0
+        )
+    );
 
-  try {
-    const isDisable =
-      action === "disable";
+    setText(
+        "adminTotalUnits",
+        formatNumber(
+            data.totalUnits || 0
+        )
+    );
 
-    const res =
-      await API.adminSetDisabled(
-        AppState.user,
-        AppState.password,
-        target,
-        isDisable
-      );
+    setText(
+        "adminTotalAtk",
+        formatNumber(
+            data.totalAtk || 0
+        )
+    );
 
-    if (res.status === "success") {
-      hint.textContent =
-        res.message;
+    setText(
+        "adminTotalDef",
+        formatNumber(
+            data.totalDef || 0
+        )
+    );
+}
 
-      hint.style.color =
-        "var(--good)";
-    } else {
-      hint.textContent =
-        res.error ||
-        "Action failed.";
+function renderPendingClaims(
+    claims
+) {
+    const container =
+        $("pendingClaimsList");
 
-      hint.style.color =
-        "var(--crimson)";
+    if (!container) return;
+
+    if (!claims.length) {
+        container.innerHTML =
+            `<div class="empty-state">No pending claims.</div>`;
+
+        return;
     }
-  } catch (err) {
-    hint.textContent =
-      "Error: " + err.message;
 
-    hint.style.color =
-      "var(--crimson)";
-  }
+    container.innerHTML =
+        claims
+            .map(claim => {
+                const id =
+                    String(
+                        claim["Claim ID"] ||
+                        ""
+                    );
+
+                return `
+                    <div class="admin-claim-card">
+                        <div class="admin-claim-header">
+                            <div>
+                                <strong>
+                                    ${escapeHtml(
+                                        claim["Type"] ||
+                                        "CLAIM"
+                                    )}
+                                </strong>
+
+                                <span>
+                                    ${escapeHtml(
+                                        claim["Player"] ||
+                                        "Unknown"
+                                    )}
+                                </span>
+                            </div>
+
+                            <span class="status pending">
+                                PENDING
+                            </span>
+                        </div>
+
+                        <div class="admin-claim-details">
+                            <div>
+                                <small>CLAIM ID</small>
+                                <strong>
+                                    ${escapeHtml(id)}
+                                </strong>
+                            </div>
+
+                            <div>
+                                <small>DATE</small>
+                                <strong>
+                                    ${escapeHtml(
+                                        formatDate(
+                                            claim["Date"]
+                                        )
+                                    )}
+                                </strong>
+                            </div>
+
+                            <div>
+                                <small>TROOPS</small>
+                                <strong>
+                                    ${formatNumber(
+                                        claim["Troops"] ||
+                                        claim["Troops Lost"] ||
+                                        0
+                                    )}
+                                </strong>
+                            </div>
+
+                            <div>
+                                <small>MEDALS</small>
+                                <strong>
+                                    ${formatNumber(
+                                        claim["Medals"] ||
+                                        claim["Regional Medals"] ||
+                                        0
+                                    )}
+                                </strong>
+                            </div>
+
+                            <div>
+                                <small>BORDER DAYS</small>
+                                <strong>
+                                    ${formatNumber(
+                                        claim["Border Days"] ||
+                                        claim["Days"] ||
+                                        0
+                                    )}
+                                </strong>
+                            </div>
+
+                            <div>
+                                <small>GOLD</small>
+                                <strong>
+                                    ${formatNumber(
+                                        claim["Gold"] ||
+                                        0
+                                    )}
+                                </strong>
+                            </div>
+                        </div>
+
+                        ${
+                            claim["Notes"]
+                                ? `
+                                    <div class="admin-claim-notes">
+                                        ${escapeHtml(
+                                            claim["Notes"]
+                                        )}
+                                    </div>
+                                `
+                                : ""
+                        }
+
+                        <div class="admin-claim-actions">
+                            <button
+                                class="btn btn-primary"
+                                onclick="handleClaimAction('${escapeJs(id)}', 'APPROVE')"
+                            >
+                                APPROVE
+                            </button>
+
+                            <button
+                                class="btn btn-danger"
+                                onclick="handleClaimAction('${escapeJs(id)}', 'REJECT')"
+                            >
+                                REJECT
+                            </button>
+                        </div>
+                    </div>
+                `;
+            })
+            .join("");
+}
+
+function escapeJs(value) {
+    return String(
+        value || ""
+    )
+        .replace(/\\/g, "\\\\")
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, "\\n")
+        .replace(/\r/g, "\\r");
 }
 
 async function handleClaimAction(
-  claimId,
-  action
+    claimId,
+    action
 ) {
-  const verb =
-    action === "APPROVE"
-      ? "approve"
-      : "reject";
-
-  if (
-    !confirm(
-      `Are you sure you want to ${verb} claim ${claimId}?`
-    )
-  ) {
-    return;
-  }
-
-  const pendingList =
-    document.getElementById(
-      "pendingClaimsList"
-    );
-
-  if (pendingList) {
-    pendingList.style.opacity =
-      "0.6";
-
-    pendingList.style.pointerEvents =
-      "none";
-  }
-
-  try {
-    const res =
-      await API.adminClaimAction(
-        AppState.user,
-        AppState.password,
-        claimId,
-        action
-      );
-
-    if (res.status === "success") {
-      alert(
-        res.message ||
-        `Claim ${verb}ed successfully.`
-      );
-
-      await loadAdminData();
-
-      if (action === "APPROVE") {
-        await loadBank();
-        await loadDashboard();
-      }
-    } else {
-      alert(
-        res.error ||
-        "Claim action failed."
-      );
+    if (!claimId) {
+        return;
     }
-  } catch (err) {
-    alert(
-      "Error: " + err.message
-    );
-  } finally {
-    if (pendingList) {
-      pendingList.style.opacity = "";
-      pendingList.style.pointerEvents = "";
+
+    const confirmation =
+        action === "APPROVE"
+            ? `Approve claim ${claimId}?`
+            : `Reject claim ${claimId}?`;
+
+    if (!confirm(confirmation)) {
+        return;
     }
-  }
+
+    try {
+        const res =
+            await API.adminClaimAction(
+                AppState.user,
+                AppState.password,
+                claimId,
+                action
+            );
+
+        if (
+            !res ||
+            res.status !== "success"
+        ) {
+            throw new Error(
+                res?.error ||
+                `Unable to ${action.toLowerCase()} claim.`
+            );
+        }
+
+        alert(
+            res.message ||
+            `Claim ${action.toLowerCase()}d successfully.`
+        );
+
+        await loadAdminData();
+
+        loadDashboard();
+        loadBank();
+
+    } catch (err) {
+        alert(
+            err.message ||
+            `Unable to ${action.toLowerCase()} claim.`
+        );
+    }
 }
+
+
+/* ============================================================
+   ADMIN MEMBER DIRECTORY
+   ============================================================ */
+
+function renderAdminMembers(
+    accounts
+) {
+    const container =
+        $("adminMembersList") ||
+        $("memberDirectory");
+
+    if (!container) return;
+
+    if (!accounts.length) {
+        container.innerHTML =
+            `<div class="empty-state">No members found.</div>`;
+
+        return;
+    }
+
+    container.innerHTML =
+        accounts
+            .map(account => `
+                <div
+                    class="member-row"
+                    onclick="showAdminMember('${escapeJs(account.player)}')"
+                >
+                    <div>
+                        <strong>
+                            ${escapeHtml(
+                                account.player
+                            )}
+                        </strong>
+
+                        <span>
+                            ${
+                                account.admin
+                                    ? "ADMIN"
+                                    : "MEMBER"
+                            }
+
+                            ${
+                                account.disabled
+                                    ? " · DISABLED"
+                                    : ""
+                            }
+                        </span>
+                    </div>
+
+                    <div>
+                        <strong>
+                            ${formatNumber(
+                                account.gold
+                            )}
+                        </strong>
+
+                        <span>
+                            ${formatNumber(
+                                account.totalUnits
+                            )} units
+                        </span>
+                    </div>
+                </div>
+            `)
+            .join("");
+
+    window.__EA_ADMIN_ACCOUNTS =
+        accounts;
+}
+
+function showAdminMember(
+    player
+) {
+    const accounts =
+        window.__EA_ADMIN_ACCOUNTS ||
+        [];
+
+    const account =
+        accounts.find(
+            item =>
+                String(
+                    item.player
+                ).toLowerCase() ===
+                String(
+                    player
+                ).toLowerCase()
+        );
+
+    if (!account) {
+        return;
+    }
+
+    const panel =
+        $("adminMemberDetails");
+
+    if (!panel) {
+        return;
+    }
+
+    panel.innerHTML = `
+        <div class="member-detail-header">
+            <h3>
+                ${escapeHtml(
+                    account.player
+                )}
+            </h3>
+
+            <span>
+                ${
+                    account.admin
+                        ? "ADMIN"
+                        : "MEMBER"
+                }
+            </span>
+        </div>
+
+        <div class="member-detail-grid">
+            <div>
+                <small>GOLD</small>
+                <strong>
+                    ${formatNumber(
+                        account.gold
+                    )}
+                </strong>
+            </div>
+
+            <div>
+                <small>UNITS</small>
+                <strong>
+                    ${formatNumber(
+                        account.totalUnits
+                    )}
+                </strong>
+            </div>
+
+            <div>
+                <small>ATK</small>
+                <strong>
+                    ${formatNumber(
+                        account.totalAtk
+                    )}
+                </strong>
+            </div>
+
+            <div>
+                <small>DEF</small>
+                <strong>
+                    ${formatNumber(
+                        account.totalDef
+                    )}
+                </strong>
+            </div>
+
+            <div>
+                <small>BORDER DAYS</small>
+                <strong>
+                    ${formatNumber(
+                        account.borderDays
+                    )}
+                </strong>
+            </div>
+
+            <div>
+                <small>STATUS</small>
+                <strong>
+                    ${
+                        account.disabled
+                            ? "DISABLED"
+                            : "ACTIVE"
+                    }
+                </strong>
+            </div>
+        </div>
+
+        <div class="member-stockpile">
+            <h4>Stockpile</h4>
+
+            ${
+                Object.keys(
+                    account.stockpile ||
+                    {}
+                ).length
+                    ? Object.entries(
+                        account.stockpile
+                    )
+                        .map(
+                            ([weapon, count]) => `
+                                <div class="stockpile-mini-row">
+                                    <span>
+                                        ${escapeHtml(
+                                            weapon
+                                        )}
+                                    </span>
+
+                                    <strong>
+                                        ${formatNumber(
+                                            count
+                                        )}
+                                    </strong>
+                                </div>
+                            `
+                        )
+                        .join("")
+                    : `<div class="empty-state">No weapons held.</div>`
+            }
+        </div>
+    `;
+
+    loadAdminPlayerLedger(
+        account.player
+    );
+}
+
+async function loadAdminPlayerLedger(
+    player
+) {
+    const container =
+        $("adminPlayerLedger");
+
+    if (!container) return;
+
+    container.innerHTML =
+        `<div class="loading">Loading ledger...</div>`;
+
+    try {
+        const res =
+            await API.getTransactions(
+                AppState.user,
+                AppState.password,
+                player
+            );
+
+        if (
+            !res ||
+            res.status !== "success"
+        ) {
+            throw new Error(
+                res?.error ||
+                "Unable to load ledger."
+            );
+        }
+
+        const transactions =
+            res.transactions ||
+            [];
+
+        if (!transactions.length) {
+            container.innerHTML =
+                `<div class="empty-state">No ledger entries.</div>`;
+
+            return;
+        }
+
+        container.innerHTML =
+            transactions
+                .slice(0, 15)
+                .map(tx => `
+                    <div class="history-row">
+                        <div>
+                            <strong>
+                                ${escapeHtml(
+                                    tx["Type"] ||
+                                    "Transaction"
+                                )}
+                            </strong>
+
+                            <span>
+                                ${escapeHtml(
+                                    tx["Notes"] ||
+                                    ""
+                                )}
+                            </span>
+                        </div>
+
+                        <div>
+                            ${formatNumber(
+                                tx["Amount"] ||
+                                0
+                            )}
+                        </div>
+
+                        <div>
+                            ${formatNumber(
+                                tx["Balance After"] ||
+                                0
+                            )}
+                        </div>
+                    </div>
+                `)
+                .join("");
+
+    } catch (err) {
+        container.innerHTML =
+            `<div class="error">${escapeHtml(err.message)}</div>`;
+    }
+}
+
+
+/* ============================================================
+   ADMIN CLAIM HISTORY
+   ============================================================ */
+
+function renderClaimHistory(
+    claims
+) {
+    const container =
+        $("claimHistoryList");
+
+    if (!container) return;
+
+    if (!claims.length) {
+        container.innerHTML =
+            `<div class="empty-state">No processed claims yet.</div>`;
+
+        return;
+    }
+
+    container.innerHTML =
+        claims
+            .slice(0, 50)
+            .map(claim => `
+                <div class="history-row">
+                    <div>
+                        <strong>
+                            ${escapeHtml(
+                                claim["Claim ID"] ||
+                                "CLAIM"
+                            )}
+                        </strong>
+
+                        <span>
+                            ${escapeHtml(
+                                claim["Player"] ||
+                                ""
+                            )}
+                        </span>
+                    </div>
+
+                    <div>
+                        ${escapeHtml(
+                            claim["Status"] ||
+                            ""
+                        )}
+                    </div>
+
+                    <div>
+                        ${formatNumber(
+                            claim["Gold"] ||
+                            0
+                        )}
+                    </div>
+                </div>
+            `)
+            .join("");
+}
+
+
+/* ============================================================
+   ADMIN AUDIT LOG
+   ============================================================ */
+
+function renderAdminLogs(
+    logs
+) {
+    const container =
+        $("adminLogsList") ||
+        $("adminAuditList");
+
+    if (!container) return;
+
+    if (!logs.length) {
+        container.innerHTML =
+            `<div class="empty-state">No admin actions recorded.</div>`;
+
+        return;
+    }
+
+    container.innerHTML =
+        logs
+            .map(log => `
+                <div class="history-row">
+                    <div>
+                        <strong>
+                            ${escapeHtml(
+                                log["Action"] ||
+                                ""
+                            )}
+                        </strong>
+
+                        <span>
+                            ${escapeHtml(
+                                log["Admin"] ||
+                                ""
+                            )}
+                        </span>
+                    </div>
+
+                    <div>
+                        ${escapeHtml(
+                            log["Target"] ||
+                            ""
+                        )}
+                    </div>
+
+                    <div>
+                        ${escapeHtml(
+                            formatDate(
+                                log["Timestamp"]
+                            )
+                        )}
+                    </div>
+                </div>
+            `)
+            .join("");
+}
+
+
+/* ============================================================
+   ADMIN BALANCE OVERRIDE
+   ============================================================ */
+
+async function handleOverride(
+    event
+) {
+    event.preventDefault();
+
+    const target =
+        $("overrideTargetUser")?.value;
+
+    const amount =
+        $("overrideAmount")?.value;
+
+    const notes =
+        $("overrideNotes")?.value ||
+        "";
+
+    if (!target) {
+        alert(
+            "Please select a player."
+        );
+
+        return;
+    }
+
+    if (
+        amount === "" ||
+        amount === null ||
+        amount === undefined
+    ) {
+        alert(
+            "Please enter an amount."
+        );
+
+        return;
+    }
+
+    try {
+        const res =
+            await API.adminAdjustBalance(
+                AppState.user,
+                AppState.password,
+                target,
+                amount,
+                notes
+            );
+
+        if (
+            !res ||
+            res.status !== "success"
+        ) {
+            throw new Error(
+                res?.error ||
+                "Unable to adjust balance."
+            );
+        }
+
+        alert(
+            res.message ||
+            "Balance adjusted successfully."
+        );
+
+        event.target.reset();
+
+        loadAdminData();
+
+    } catch (err) {
+        alert(
+            err.message ||
+            "Unable to adjust balance."
+        );
+    }
+}
+
+
+/* ============================================================
+   ADMIN DISABLE / ENABLE
+   ============================================================ */
+
+async function handleDisableEnable(
+    action
+) {
+    const target =
+        $("adminTargetUser")?.value;
+
+    if (!target) {
+        alert(
+            "Please select a player."
+        );
+
+        return;
+    }
+
+    const disable =
+        action === "disable";
+
+    if (
+        !confirm(
+            `${disable ? "Disable" : "Enable"} account for ${target}?`
+        )
+    ) {
+        return;
+    }
+
+    try {
+        const res =
+            await API.adminSetDisabled(
+                AppState.user,
+                AppState.password,
+                target,
+                disable
+            );
+
+        if (
+            !res ||
+            res.status !== "success"
+        ) {
+            throw new Error(
+                res?.error ||
+                "Unable to change account status."
+            );
+        }
+
+        alert(
+            res.message ||
+            "Account status updated."
+        );
+
+        loadAdminData();
+
+    } catch (err) {
+        alert(
+            err.message ||
+            "Unable to change account status."
+        );
+    }
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+function checkMobile() {
+    document.body.classList.toggle(
+        "mobile",
+        window.innerWidth <= 768
+    );
+}
+
+window.addEventListener(
+    "resize",
+    checkMobile
+);
+
+
+/* ============================================================
+   LOADING HELPERS
+   ============================================================ */
+
+function setLoading(
+    id,
+    message
+) {
+    const el = $(id);
+
+    if (!el) return;
+
+    el.textContent =
+        message || "";
+}
+
+
+/* ============================================================
+   GLOBAL FUNCTIONS
+   ============================================================ */
+
+window.switchPane =
+    switchPane;
+
+window.handleClaimAction =
+    handleClaimAction;
+
+window.handleDisableEnable =
+    handleDisableEnable;
+
+window.showAdminMember =
+    showAdminMember;
